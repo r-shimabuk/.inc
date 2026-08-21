@@ -297,6 +297,14 @@
   .receiptHead{text-align:center; margin-bottom:8px;}
   .receiptHead .biz{font-size:16px; font-weight:700; letter-spacing:.06em;}
   .receiptHead .biz-sub{font-family:"Courier New",monospace; font-size:9px; opacity:.85; margin-top:2px;}
+
+  .defeatCard{ background:var(--pink); color:var(--bg); border:none; padding:22px 18px; text-align:center; }
+  .defeatCard .defeatTitle{ font-size:26px; font-weight:800; letter-spacing:.03em; margin-bottom:4px; }
+  .defeatCard .defeatSub{ font-family:"Courier New",monospace; font-size:9px; opacity:.85; letter-spacing:.08em; margin-bottom:14px; }
+  .defeatCard .defeatReason{ font-family:"Courier New",monospace; font-size:11px; margin-bottom:16px; line-height:1.6; }
+  .defeatCard button{ border-color:var(--bg); color:var(--bg); background:transparent; }
+  .defeatCard button.filled{ background:var(--bg); color:var(--pink); }
+  #overOverlay{ background:rgba(255,46,196,.28); }
   .shopTitle{
     font-size:38px; font-weight:800; letter-spacing:.06em;
     color:var(--bg);
@@ -474,9 +482,10 @@
 </div>
 
 <div class="overlay" id="overOverlay" style="display:none;">
-  <div class="card">
-    <div class="cardTitle">CONNECTION TERMINATED</div>
-    <div style="font-family:'Courier New',monospace; font-size:11px; margin-bottom:10px;" id="overReason"></div>
+  <div class="card defeatCard">
+    <div class="defeatTitle">CONNECTION TERMINATED</div>
+    <div class="defeatSub">生命機械の免疫システムに排除された</div>
+    <div class="defeatReason" id="overReason"></div>
     <button class="block filled" onclick="location.reload()">再侵入する</button>
     <button class="block" style="margin-top:8px;" onclick="copyPlaytestData()">📋 プレイ記録をコピー（テスト協力用）</button>
   </div>
