@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1398,6 +1398,7 @@ function closeShop(){ run.stage+=1; run.stageRerollCost=4; buildStage(); }
 // --- audio system: BGMは用意された楽曲ファイル、SFXは.co準拠の合成音 ---
 const AudioSys = (function(){
   let ctx=null, masterGain=null, sfxGain=null;
+  let bgmSource=null, bgmGainNode=null;
   let counterSpinNodes=null, counterClickTimer=null;
   let muted=false;
   const BGM_VOLUME = 0.03; // 音量は対数的に感じるため、線形の0.1では体感差が小さかった。大きく下げる
@@ -1409,12 +1410,23 @@ const AudioSys = (function(){
       ctx = new (window.AudioContext || window.webkitAudioContext)();
       masterGain = ctx.createGain(); masterGain.gain.value = 1; masterGain.connect(ctx.destination);
       sfxGain = ctx.createGain(); sfxGain.gain.value = 0.45; sfxGain.connect(masterGain);
+      bgmGainNode = ctx.createGain(); bgmGainNode.gain.value = muted?0:BGM_VOLUME; bgmGainNode.connect(masterGain);
+      if(bgmEl && !bgmSource){
+        try{
+          bgmSource = ctx.createMediaElementSource(bgmEl);
+          bgmSource.connect(bgmGainNode);
+        }catch(e){ /* すでに接続済みなど */ }
+      }
     }catch(e){ ctx=null; }
     return ctx;
   }
   function applyBgmVolume(){
-    if(!bgmEl) return;
-    bgmEl.volume = muted ? 0 : BGM_VOLUME;
+    // iOS Safariは<audio>のvolumeプロパティを無視するため、GainNode側で音量を制御する
+    if(bgmGainNode){
+      bgmGainNode.gain.value = muted ? 0 : BGM_VOLUME;
+    } else if(bgmEl){
+      bgmEl.volume = muted ? 0 : BGM_VOLUME; // Web Audio未対応環境向けのフォールバック
+    }
   }
   function unlock(){
     const c = ensureCtx(); if(!c) return;
@@ -1541,6 +1553,14 @@ setTimeout(()=>{
   loadingReady = true;
   loadingScreen.classList.add('ready');
 }, 900);
+
+// ダブルタップによるズームを禁止（user-scalable=noだけでは効かないiOS Safariがあるための保険）
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e)=>{
+  const now = Date.now();
+  if(now - lastTouchEnd <= 350) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive:false });
 </script>
 </body>
 </html>
