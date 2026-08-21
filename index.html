@@ -132,7 +132,7 @@
   .loadSlot.empty{ border-style:dashed; opacity:.5; }
   .loadSlot .ic{ font-size:15px; }
   .loadSlot .nm{ font-family:"Courier New",monospace; font-size:7.5px; margin-top:2px; line-height:1.2; }
-  .receiptCard .loadSlot{ border-color:var(--bg); }
+  .receiptCard .loadSlot{ border-color:var(--bg); background:var(--green); }
   .loadSlot.sellable{ cursor:pointer; }
   .loadSlot.sellable:active{ background:rgba(245,239,201,.15); }
   .sellTag{ font-family:"Courier New",monospace; font-size:6.5px; opacity:.8; margin-top:2px; }
@@ -164,6 +164,7 @@
   /* 横から見た時だけ分かる「お宝」マーカー（俯瞰では見えない） */
   .sideTreasure{ position:absolute; bottom:16px; font-size:11px; color:var(--pink); }
   .sideDanger{ position:absolute; bottom:16px; font-size:11px; color:var(--ink); opacity:.6; }
+  .sideChaos{ position:absolute; bottom:16px; font-size:11px; color:var(--pink); }
   .board{
     position:relative; z-index:0;
     display:grid; grid-template-columns:repeat(5,54px); grid-template-rows:repeat(5,54px);
@@ -293,7 +294,7 @@
   .cardTitle{font-size:16px; margin-bottom:2px; font-weight:700;}
   .cardSub{font-family:"Courier New",monospace; font-size:9px; color:var(--ink-dim); letter-spacing:.06em; margin-bottom:10px;}
 
-  .receiptCard{ background:var(--green); color:var(--bg); border:none; padding:20px 18px; }
+  .receiptCard{ background:var(--green); color:var(--bg); border:none; padding:20px 18px; position:relative; z-index:0; }
   .receiptHead{text-align:center; margin-bottom:8px;}
   .receiptHead .biz{font-size:16px; font-weight:700; letter-spacing:.06em;}
   .receiptHead .biz-sub{font-family:"Courier New",monospace; font-size:9px; opacity:.85; margin-top:2px;}
@@ -317,7 +318,7 @@
   .co-score .unit{font-size:15px; opacity:.85; margin-left:4px;}
   .co-sub{font-family:"Courier New",monospace; font-size:9px; text-align:center; opacity:.85; margin-bottom:10px; letter-spacing:.04em;}
   .coinMathRow{ display:grid; grid-template-columns:.85fr 12px .85fr 12px 1.3fr; align-items:end; gap:2px; margin:8px 0 10px; }
-  .coinBox{ border:1.5px solid var(--bg); padding:6px 3px; text-align:center; opacity:.8; }
+  .coinBox{ border:1.5px solid var(--bg); padding:6px 3px; text-align:center; opacity:.8; background:var(--green); }
   .coinBox .cap{ font-family:"Courier New",monospace; font-size:7px; opacity:.85; letter-spacing:.04em; }
   .coinBox .num{ font-size:14px; font-weight:700; margin-top:2px; }
   .coinBox.total{ border-width:2.5px; border-color:var(--pink); opacity:1; padding:9px 4px; background:var(--bg); outline:2px solid var(--bg); outline-offset:0; }
@@ -330,6 +331,7 @@
   .shopBox{
     display:flex; flex-direction:column; align-items:center; text-align:center; gap:5px;
     border:1.5px solid var(--bg); padding:10px 6px 8px; cursor:pointer; min-height:158px; position:relative;
+    background:var(--green);
   }
   .shopBox:active{ background:rgba(245,239,201,.15); }
   .shopBox.disabled{ opacity:.4; cursor:default; }
@@ -442,10 +444,11 @@
 
   <div class="row">
     <button class="block" onclick="stepManual()">◐ WAIT（隣接を侵食）</button>
+    <button class="block" id="stageRerollBtn" onclick="rerollStage()">↻ REROLL</button>
   </div>
 
   <div class="log" id="log"></div>
-  <div class="exportRow" id="exportRow" onclick="copyPlaytestData()">📋 プレイ記録をコピー <span id="exportCount">(0件)</span></div>
+  <div class="exportRow" id="exportRow" onclick="copyPlaytestData()">▤ プレイ記録をコピー <span id="exportCount">(0件)</span></div>
 </div>
 
 <div class="overlay" id="shopOverlay" style="display:none;">
@@ -487,7 +490,7 @@
     <div class="defeatSub">生命機械の免疫システムに排除された</div>
     <div class="defeatReason" id="overReason"></div>
     <button class="block filled" onclick="location.reload()">再侵入する</button>
-    <button class="block" style="margin-top:8px;" onclick="copyPlaytestData()">📋 プレイ記録をコピー（テスト協力用）</button>
+    <button class="block" style="margin-top:8px;" onclick="copyPlaytestData()">▤ プレイ記録をコピー（テスト協力用）</button>
   </div>
 </div>
 
@@ -502,7 +505,7 @@
     <div class="co-sub">全6ターム・18セクタを踏破した</div>
     <div class="co-divider"></div>
     <button class="block filled" onclick="location.reload()">再侵入する（NEW GAME+）</button>
-    <button class="block" style="margin-top:8px; border-color:var(--bg); color:var(--bg);" onclick="copyPlaytestData()">📋 プレイ記録をコピー（テスト協力用）</button>
+    <button class="block" style="margin-top:8px; border-color:var(--bg); color:var(--bg);" onclick="copyPlaytestData()">▤ プレイ記録をコピー（テスト協力用）</button>
   </div>
 </div>
 
@@ -539,6 +542,8 @@ const ICONS = {
   plus1:'+', plus3:'+', mult:'✳\uFE0E',
   perm_power:'↑\uFE0E', perm_ap:'▣\uFE0E', perm_drain:'≋\uFE0E', coin:'$',
   poison_immune:'♦\uFE0E', bonus_boost:'✦\uFE0E', predator_discount:'⇄\uFE0E', grace:'◐\uFE0E',
+  reload:'↻\uFE0E', copy:'▤\uFE0E', chaos:'✳\uFE0E',
+  handL:'☜\uFE0E', handR:'☞\uFE0E', handU:'☝\uFE0E', handD:'☟\uFE0E',
 };
 
 const CARD_POOL = [
@@ -616,7 +621,7 @@ function clearPlaytestData(){
 }
 
 function initGame(){
-  run = { cards:[], stage:1, coin:0, rerollCost:3, history:[] };
+  run = { cards:[], stage:1, coin:0, rerollCost:3, stageRerollCost:4, history:[] };
   recomputeFromCards();
   renderLoadout();
   updateExportCount();
@@ -694,24 +699,30 @@ function renderLoadout(){
   document.getElementById('loadoutMain').innerHTML = buildLoadoutMarkup();
 }
 
-function buildStage(){
-  const isBoss = run.stage % STAGES_PER_TERM === 0;
-  const restriction = isBoss ? BOSS_RESTRICTIONS[Math.floor(Math.random()*BOSS_RESTRICTIONS.length)] : null;
+function rerollStage(){
+  if(!state || state.busy) return;
+  if((state.actionCount||0) > 0){ setMsg('このセクタでは既に行動済み', true); return; }
+  if(run.coin < run.stageRerollCost){ setMsg('データが足りない', true); return; }
+  run.coin -= run.stageRerollCost;
+  run.stageRerollCost += 2;
+  log(`↻ セクタ${run.stage}をリロールした（コスト-${run.stageRerollCost-2}DATA）`);
+  buildStage();
+}
 
+function generateStageGrid(isBoss, safeR, safeC){
   const grid=[];
   for(let r=0;r<SIZE;r++){ const row=[]; for(let c=0;c<SIZE;c++) row.push({type:'empty'}); grid.push(row); }
   grid[GOAL_R][GOAL_C]={type:'goal'};
 
   const empties=[];
   for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++){
-    if((r===START_R&&c===START_C)||(r===GOAL_R&&c===GOAL_C)) continue;
+    if((r===safeR&&c===safeC)||(r===GOAL_R&&c===GOAL_C)) continue;
     empties.push([r,c]);
   }
   shuffle(empties);
-  const leaveSpecial=3;
+  const hasChaos = Math.random() < 0.12; // 隠しの「混沌マス」：たまにしか出ない
+  const leaveSpecial = hasChaos ? 4 : 3;
   const fillCount=empties.length-leaveSpecial;
-
-  const basePower = BASE_POWER + run.permPower;
 
   // 全体の合計値を難易度として扱う：150からスタートし、ステージごとに10〜20ずつゆるやかに増える
   const totalDifficulty = 150 + (run.stage-1) * (10 + Math.floor(Math.random()*11));
@@ -743,18 +754,25 @@ function buildStage(){
   grid[br][bc] = {type:'bonus'};
   const [pr2,pc2] = empties[fillCount+1];
   grid[pr2][pc2] = {type:'poison'};
+  if(hasChaos){ const [cr,cc] = empties[fillCount+2]; grid[cr][cc] = {type:'chaos'}; }
 
   const predatorChance = isBoss ? 1 : Math.min(0.95, 0.15 + (run.stage-1)*0.20);
   if(Math.random() < predatorChance){
     const enemyCells=[];
-    for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++) if(grid[r][c].type==='enemy') enemyCells.push([r,c]);
+    for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++){
+      if(grid[r][c].type!=='enemy') continue;
+      const nearGoal = Math.max(Math.abs(r-GOAL_R), Math.abs(c-GOAL_C)) <= 1; // CORE隣接3マスには白血球を置かない（詰み防止）
+      if(nearGoal) continue;
+      enemyCells.push([r,c]);
+    }
     if(enemyCells.length){
       const [er,ec]=enemyCells[Math.floor(Math.random()*enemyCells.length)];
       const predValue = maxCellValue+4+Math.floor(Math.random()*5) + (isBoss?5:0);
       grid[er][ec]={type:'predator', value:predValue, infected:false, drained:0, warned:false, warnCount:0};
       if(Math.random()<0.4){
         const dirs=[[er-1,ec],[er+1,ec],[er,ec-1],[er,ec+1]].filter(([nr,nc])=>
-          nr>=0&&nr<SIZE&&nc>=0&&nc<SIZE&&grid[nr][nc].type==='enemy');
+          nr>=0&&nr<SIZE&&nc>=0&&nc<SIZE&&grid[nr][nc].type==='enemy'&&
+          Math.max(Math.abs(nr-GOAL_R), Math.abs(nc-GOAL_C))>1);
         if(dirs.length){
           const [nr,nc]=dirs[Math.floor(Math.random()*dirs.length)];
           grid[nr][nc]={type:'predator', value:predValue, infected:false, drained:0, warned:false, warnCount:0, pairWith:[er,ec]};
@@ -778,6 +796,16 @@ function buildStage(){
     }
   }
 
+  return {grid, totalDifficulty, maxCellValue, predatorChance};
+}
+
+function buildStage(){
+  const isBoss = run.stage % STAGES_PER_TERM === 0;
+  const restriction = isBoss ? BOSS_RESTRICTIONS[Math.floor(Math.random()*BOSS_RESTRICTIONS.length)] : null;
+
+  const basePower = BASE_POWER + run.permPower;
+  const { grid, totalDifficulty, maxCellValue, predatorChance } = generateStageGrid(isBoss, START_R, START_C);
+
   const apLimit = BASE_AP + run.permAP - (restriction && restriction.id==='low_ap' ? 4 : 0);
   state = { grid, pos:{r:START_R,c:START_C}, power:basePower, ap:apLimit, busy:false, engulf:null, eaten:false, bossRestriction:restriction, actionCount:0, burstFx:null };
   document.getElementById('shopOverlay').style.display='none';
@@ -796,8 +824,18 @@ function buildStage(){
 }
 function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } }
 
+function triggerChaosShuffle(){
+  const isBoss = run.stage % STAGES_PER_TERM === 0;
+  const { grid } = generateStageGrid(isBoss, state.pos.r, state.pos.c);
+  state.grid = grid;
+  log('✳ 隠しマスを踏んだ：ステージがリロールされた！');
+  AudioSys.sfxCounterSpinStart();
+  setTimeout(()=>{ AudioSys.sfxCounterSpinStop(); }, 550);
+}
+
 function revealStage(){
   state.busy = true;
+  AudioSys.sfxCounterSpinStart();
   const board = document.getElementById('board');
   board.innerHTML='';
   const cellEls=[];
@@ -820,6 +858,7 @@ function revealStage(){
     });
     if(ticks>=maxTicks){
       clearInterval(spin);
+      AudioSys.sfxCounterSpinStop();
       state.busy=false;
       render();
     }
@@ -851,6 +890,9 @@ function renderSideView(){
     } else if(cellData.type==='bonus'){
       // 俯瞰では見えないお宝：横から見た時だけキラッと見える
       inner = `<div class="sideTreasure">${ICONS.bonus}</div><div class="sideEmpty"></div>`;
+    } else if(cellData.type==='chaos'){
+      // 俯瞰では見えない隠しマス：踏むとステージがリロールされる
+      inner = `<div class="sideChaos">${ICONS.reload}</div><div class="sideEmpty"></div>`;
     } else if(cellData.type==='empty'){
       inner = `<div class="sideVal">&nbsp;</div><div class="sideEmpty"></div>`;
     } else if(cellData.type==='enemy' || cellData.type==='predator'){
@@ -871,6 +913,13 @@ function render(){
   document.getElementById('statStage').textContent=run.stage;
   document.getElementById('statCoin').textContent=run.coin;
 
+  const rrBtn = document.getElementById('stageRerollBtn');
+  if(rrBtn){
+    const usedYet = (state.actionCount||0) > 0;
+    rrBtn.textContent = usedYet ? '↻ REROLL' : `↻ REROLL (${run.stageRerollCost})`;
+    rrBtn.disabled = usedYet || run.coin < run.stageRerollCost || state.busy;
+  }
+
   const board=document.getElementById('board');
   board.innerHTML='';
   for(let r=0;r<SIZE;r++){
@@ -890,6 +939,7 @@ function render(){
       else if(cellData.type==='empty'){ clickable = movable(r,c)&&state.ap>0; }
       else if(cellData.type==='bonus'){ clickable = movable(r,c)&&state.ap>0; }
       else if(cellData.type==='poison'){ clickable = movable(r,c)&&state.ap>0; }
+      else if(cellData.type==='chaos'){ clickable = movable(r,c)&&state.ap>0; }
       else if(cellData.type==='enemy'){
         cls += ' enemy';
         if(cellData.pairWith) cls+=' paired';
@@ -1036,6 +1086,13 @@ function tryMove(r,c){
       setMsg('毒マス…感染力が半減');
     }
     state.grid[r][c]={type:'empty'};
+    afterAction(); return;
+  }
+  if(target.type==='chaos'){
+    state.ap-=1; state.pos={r,c};
+    state.grid[r][c]={type:'empty'};
+    triggerChaosShuffle();
+    setMsg('✳ ステージがリロールされた！', true);
     afterAction(); return;
   }
   if(target.type==='predator'){
@@ -1335,12 +1392,13 @@ function reroll(){
   shopStock=drawCards(); renderShop();
   document.getElementById('mathTotal').textContent = run.coin;
 }
-function closeShop(){ run.stage+=1; buildStage(); }
+function closeShop(){ run.stage+=1; run.stageRerollCost=4; buildStage(); }
 
 // --- audio system: synthesized BGM (drone/ambient) + SFX, .co準拠・外部ファイルなし ---
 const AudioSys = (function(){
   let ctx=null, masterGain=null, bgmGain=null, sfxGain=null;
-  let bgmNodes=[], bgmRunning=false, muted=true;
+  let counterSpinNodes=null, counterClickTimer=null;
+  let bgmNodes=[], bgmRunning=false, muted=false;
 
   function ensureCtx(){
     if(ctx) return ctx;
@@ -1417,7 +1475,64 @@ const AudioSys = (function(){
   function sfxCardPick(){ playTone(440,.07,'square',.2,0); playTone(660,.09,'square',.18,.05); }
   function sfxFail(){ playTone(180,.12,'square',.18,0); }
 
-  return { unlock, setMuted, isMuted, loadMutedPref, sfxAbsorb, sfxTie, sfxSwap, sfxBonus, sfxPoisonHurt, sfxPoisonHeal, sfxWarn, sfxEaten, sfxClear, sfxCardPick, sfxFail };
+  function playMechanicalClick(gainValue){
+    const c=ensureCtx(); if(!c) return;
+    const t0=c.currentTime;
+    const osc=c.createOscillator(); osc.type='square'; osc.frequency.setValueAtTime(1800,t0);
+    const g=c.createGain(); g.gain.setValueAtTime(gainValue,t0);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+0.012);
+    osc.connect(g); g.connect(sfxGain); osc.start(t0); osc.stop(t0+0.015);
+
+    const tickOsc=c.createOscillator(); tickOsc.type='square'; tickOsc.frequency.setValueAtTime(4200,t0);
+    const tickGain=c.createGain(); tickGain.gain.setValueAtTime(gainValue*0.5,t0);
+    tickGain.gain.exponentialRampToValueAtTime(0.0001, t0+0.004);
+    tickOsc.connect(tickGain); tickGain.connect(sfxGain); tickOsc.start(t0); tickOsc.stop(t0+0.006);
+  }
+  function sfxCounterSpinStart(){
+    const c=ensureCtx(); if(!c || counterSpinNodes) return;
+    const osc=c.createOscillator(); osc.type='sawtooth'; osc.frequency.value=55;
+    const oscFilter=c.createBiquadFilter(); oscFilter.type='lowpass'; oscFilter.frequency.value=320;
+    const oscGain=c.createGain(); oscGain.gain.value=0;
+    osc.connect(oscFilter); oscFilter.connect(oscGain); oscGain.connect(sfxGain); osc.start();
+
+    const grainLfo=c.createOscillator(); grainLfo.type='square'; grainLfo.frequency.value=26;
+    const grainLfoGain=c.createGain(); grainLfoGain.gain.value=0;
+    grainLfo.connect(grainLfoGain); grainLfoGain.connect(oscGain.gain); grainLfo.start();
+
+    const bufferSize=2*c.sampleRate;
+    const noiseBuffer=c.createBuffer(1,bufferSize,c.sampleRate);
+    const data=noiseBuffer.getChannelData(0);
+    for(let i=0;i<bufferSize;i++){ data[i]=Math.random()*2-1; }
+    const noise=c.createBufferSource(); noise.buffer=noiseBuffer; noise.loop=true;
+    const noiseFilter=c.createBiquadFilter(); noiseFilter.type='bandpass'; noiseFilter.frequency.value=500; noiseFilter.Q.value=0.6;
+    const noiseGain=c.createGain(); noiseGain.gain.value=0;
+    noise.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(sfxGain); noise.start();
+
+    counterSpinNodes = { osc, oscGain, grainLfo, grainLfoGain, noise, noiseGain };
+
+    const t0=c.currentTime;
+    oscGain.gain.setTargetAtTime(0.1, t0, 0.05);
+    grainLfoGain.gain.setTargetAtTime(0.06, t0, 0.05);
+    noiseGain.gain.setTargetAtTime(0.05, t0, 0.05);
+
+    clearInterval(counterClickTimer);
+    counterClickTimer = setInterval(()=>{ playMechanicalClick(0.11); }, 55);
+  }
+  function sfxCounterSpinStop(){
+    clearInterval(counterClickTimer);
+    counterClickTimer = null;
+    if(!counterSpinNodes || !ctx) return;
+    const c=ctx;
+    const { osc, oscGain, grainLfo, grainLfoGain, noise, noiseGain } = counterSpinNodes;
+    counterSpinNodes = null;
+    const t0=c.currentTime;
+    oscGain.gain.setTargetAtTime(0, t0, 0.08);
+    grainLfoGain.gain.setTargetAtTime(0, t0, 0.08);
+    noiseGain.gain.setTargetAtTime(0, t0, 0.08);
+    osc.stop(t0+0.4); grainLfo.stop(t0+0.4); noise.stop(t0+0.4);
+  }
+
+  return { unlock, setMuted, isMuted, loadMutedPref, sfxAbsorb, sfxTie, sfxSwap, sfxBonus, sfxPoisonHurt, sfxPoisonHeal, sfxWarn, sfxEaten, sfxClear, sfxCardPick, sfxFail, sfxCounterSpinStart, sfxCounterSpinStop };
 })();
 AudioSys.loadMutedPref();
 function toggleMute(){
