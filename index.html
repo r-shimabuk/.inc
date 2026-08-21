@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>.inc — a .co sequel</title>
+<style>
+  :root{
+    color-scheme: light;
+    --bg:#f5efc9;
+    --ink:#12331d;
+    --ink-dim:rgba(18,51,29,.6);
+    --green:#0f9d4a;
+    --green-dim:rgba(15,157,74,.55);
+    --pink:#ff2ec4;
+    --pink-dim:rgba(255,46,196,.55);
+    --bg-deep:#ded18f;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none;}
+  html,body{height:100%; margin:0; overflow:hidden; background:var(--bg);}
+  body{
+    font-family:"Space Grotesk", sans-serif;
+    color:var(--ink);
+    display:flex; align-items:flex-start; justify-content:center;
+  }
+
+  /* ---- loading screen (.CO踏襲) ---- */
+  .loading-screen{
+    position:fixed; inset:0; background:var(--bg); z-index:300;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    transition:opacity .5s ease; cursor:pointer;
+  }
+  .loading-screen.hide{ opacity:0; pointer-events:none; }
+  .loading-screen.gone{ display:none !important; }
+  .virus-wrap{ width:130px; height:130px; margin-bottom:24px; }
+  .virus-svg{ width:100%; height:100%; animation: virusBreathe 3s ease-in-out infinite; }
+  @keyframes virusBreathe{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.045); } }
+  .loading-logo{ display:flex; align-items:baseline; gap:6px; margin-bottom:14px; }
+  .loading-ext{ font-size:18px; letter-spacing:.1em; color:var(--bg); background:var(--green); padding:3px 12px; font-weight:700; }
+  .loading-ext-sub{ font-family:"Courier New",monospace; font-size:9px; color:var(--ink-dim); letter-spacing:.1em; }
+  .loading-tagline{
+    font-size:9.5px; color:var(--ink-dim); text-align:center; line-height:1.7;
+    margin-bottom:12px; letter-spacing:.02em; padding:0 30px;
+  }
+  .loading-story{
+    font-family:"Courier New",monospace; font-size:10px; color:var(--ink); text-align:center; line-height:1.7;
+    margin-bottom:20px; padding:0 24px;
+  }
+  .loading-story .ja{ display:block; font-size:9.5px; color:var(--ink-dim); margin-top:6px; }
+  .loading-status{ font-family:"Courier New",monospace; font-size:9.5px; letter-spacing:.16em; color:var(--ink-dim); text-transform:uppercase; }
+  .loading-status .dots{ display:inline-block; width:1.4em; text-align:left; animation: dotBlink 1.2s steps(4,end) infinite; }
+  @keyframes dotBlink{ 0%{ clip-path:inset(0 100% 0 0); } 100%{ clip-path:inset(0 0 0 0); } }
+  .loading-prompt{
+    font-size:10px; letter-spacing:.08em; color:var(--green); font-weight:700;
+    margin-top:18px; opacity:0; transition:opacity .4s ease;
+    animation: promptPulse 1.4s ease-in-out infinite; text-align:center; padding:0 24px; line-height:1.7;
+  }
+  .loading-screen.ready .loading-prompt{ opacity:1; }
+  .loading-screen.ready .loading-status{ display:none; }
+  @keyframes promptPulse{ 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
+  .app{
+    width:100%; max-width:400px; height:100dvh; background:var(--bg);
+    display:flex; flex-direction:column;
+    padding:12px 14px calc(10px + env(safe-area-inset-bottom));
+    gap:6px; position:relative; overflow:hidden;
+  }
+  .brand{font-weight:700; letter-spacing:0; line-height:1.1;}
+  .brandBox{
+    display:inline-block; background:var(--green); color:var(--bg);
+    padding:3px 9px; font-size:18px; font-weight:700; letter-spacing:.02em;
+  }
+  .brand .sub{display:block; font-family:"Courier New",monospace; font-size:8.5px; color:var(--ink-dim); font-weight:400; letter-spacing:.04em; margin-top:3px;}
+  .hr{border-top:1.5px solid var(--green); margin:0; opacity:.5;}
+  .bossBadge{
+    display:none; background:var(--bg); color:var(--pink); border:1.5px solid var(--pink);
+    padding:6px 8px; font-family:"Courier New",monospace; font-size:9px; line-height:1.4; margin:-2px 0 2px;
+  }
+  .bossBadge b{ font-family:"Space Grotesk",sans-serif; font-size:10.5px; color:var(--pink); }
+
+  .headerRow{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+  .pointsBadge{
+    display:flex; align-items:center; gap:5px; border:1.5px solid var(--green); border-radius:999px;
+    padding:4px 10px 4px 8px; flex-shrink:0; margin-top:2px;
+  }
+  .pointsBadge .ic{ font-size:11px; }
+  .pointsBadge .v{ font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:12px; font-variant-numeric:tabular-nums; }
+  .pointsBadge .lbl{ font-family:"Courier New",monospace; font-size:7px; color:var(--ink-dim); letter-spacing:.05em; }
+  .muteBtn{
+    width:22px; height:22px; border:1.5px solid var(--green); border-radius:50%; background:transparent;
+    display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; margin-top:2px; padding:0;
+  }
+  .muteBtn svg{ width:11px; height:11px; }
+  .muteBtn .ion{ stroke:var(--green); fill:none; }
+  .muteBtn .ioff{ stroke:var(--ink-dim); fill:none; display:none; }
+  .muteBtn.muted .ion{ display:none; }
+  .muteBtn.muted .ioff{ display:block; }
+
+  .stats{display:grid; grid-template-columns:1.5fr 1fr .7fr; gap:6px; align-items:stretch;}
+  .stat{border:1.5px solid var(--green); padding:5px 4px; text-align:center;}
+  .stat.hero{background:var(--green);}
+  .stat .k{font-size:9px; color:var(--green); letter-spacing:.06em; display:flex; align-items:center; justify-content:center; gap:4px; text-transform:uppercase; font-weight:700;}
+  .stat .k .ic{font-size:15px;}
+  .stat.hero .k{color:var(--bg);}
+  .stat .v{font-size:18px; font-weight:700; color:var(--green); margin-top:2px; font-variant-numeric:tabular-nums;}
+  .stat.hero .v{color:var(--bg); font-size:25px;}
+  .stat.minor{ padding:4px 3px; }
+  .stat.minor .v{ font-size:14px; }
+  .stat.minor .k{ font-size:7.5px; }
+  .stats.compact{ gap:4px; }
+  .stats.compact .stat{ padding:3px 3px; }
+  .stats.compact .stat .v{ font-size:15px; margin-top:1px; }
+  .stats.compact .stat.hero .v{ font-size:19px; }
+  .stats.compact .stat .k{ font-size:7.5px; gap:3px; }
+  .stats.compact .stat .k .ic{ font-size:11px; }
+
+  .slots{display:grid; grid-template-columns:1fr 1fr; gap:6px;}
+  .slot{border:1.5px solid var(--green); padding:6px 9px;}
+  .slot .k{font-size:8px; color:var(--green); letter-spacing:.06em; text-transform:uppercase;}
+
+  .loadout{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+  .loadout.compact{ gap:4px; }
+  .loadout.compact .loadSlot{ min-height:32px; padding:3px 3px; }
+  .loadout.compact .loadSlot .ic{ font-size:12px; }
+  .loadout.compact .loadSlot .nm{ font-size:6.5px; margin-top:0; }
+  .loadSlot{
+    border:1.5px solid var(--green); padding:5px 4px; text-align:center;
+    min-height:44px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .loadSlot.empty{ border-style:dashed; opacity:.5; }
+  .loadSlot .ic{ font-size:15px; }
+  .loadSlot .nm{ font-family:"Courier New",monospace; font-size:7.5px; margin-top:2px; line-height:1.2; }
+  .receiptCard .loadSlot{ border-color:var(--bg); }
+  .loadSlot.sellable{ cursor:pointer; }
+  .loadSlot.sellable:active{ background:rgba(245,239,201,.15); }
+  .sellTag{ font-family:"Courier New",monospace; font-size:6.5px; opacity:.8; margin-top:2px; }
+  .slot .v{font-size:11px; font-weight:700; margin-top:2px;}
+  .slot .d{font-family:"Courier New",monospace; font-size:9px; color:var(--ink-dim); margin-top:1px; line-height:1.3;}
+
+  .boardWrap{display:flex; justify-content:center; padding:4px 0; position:relative; z-index:0;}
+
+  .sideViewWrap{ margin:2px 0 0; }
+  .sideViewLabel{ font-family:"Courier New",monospace; font-size:7px; color:var(--green-dim); letter-spacing:.05em; text-align:center; margin-bottom:3px; }
+  .sideView{
+    width:286px; margin:0 auto; height:80px; border:1.5px solid var(--green); position:relative;
+    display:flex; align-items:flex-end; justify-content:space-between; padding:0 4px; overflow:hidden;
+  }
+  .sideView::after{ content:''; position:absolute; left:0; right:0; bottom:14px; height:1.5px; background:var(--green); opacity:.4; }
+  .sideSlot{ width:52px; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; position:relative; }
+  .sideVal{ font-family:"Courier New",monospace; font-size:8px; color:var(--green); margin-bottom:2px; }
+
+  /* 駒シルエットの代わりに、数字そのものの大きさで格を表現する */
+  .sideBigNum{
+    font-family:"Space Grotesk",sans-serif; font-weight:700; color:var(--green); font-size:22px;
+    line-height:1; margin-bottom:12px; font-variant-numeric:tabular-nums;
+  }
+  .sideBigNum.player{ color:var(--green); }
+  .sideBigNum.predatorNum{ color:var(--pink); }
+  .sideEmpty{ width:18px; height:2px; background:var(--green-dim); margin-bottom:14px; opacity:.5; }
+  .sideGoal{ width:26px; height:30px; background:var(--green); border-radius:13px 13px 0 0; margin-bottom:14px; }
+
+  /* 横から見た時だけ分かる「お宝」マーカー（俯瞰では見えない） */
+  .sideTreasure{ position:absolute; bottom:16px; font-size:11px; color:var(--pink); }
+  .sideDanger{ position:absolute; bottom:16px; font-size:11px; color:var(--ink); opacity:.6; }
+  .board{
+    position:relative; z-index:0;
+    display:grid; grid-template-columns:repeat(5,54px); grid-template-rows:repeat(5,54px);
+    gap:4px; width:286px; height:286px;
+  }
+  .cell{
+    width:54px; height:54px; border:1.5px solid var(--green); border-radius:2px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:17px; font-weight:700; color:var(--ink); position:relative;
+    overflow:hidden; background:transparent; font-variant-numeric:tabular-nums;
+  }
+  .cell.movable{border-width:2.5px;}
+  .cell.player{
+    background:var(--green); color:var(--bg); border-color:var(--green);
+    border-radius:50%;
+  }
+  .cell.player.big{
+    transform:scale(1.22); z-index:6;
+    border-width:4px; border-color:var(--bg);
+    outline:3px solid var(--pink); outline-offset:0;
+  }
+  .cell.goal{
+    background:var(--green); color:var(--bg);
+    font-size:12px; font-weight:700; letter-spacing:.03em;
+    border-radius:27px 27px 0 0;
+  }
+  .cell.predator{ border-style:double; border-width:5px; }
+  .cell.predator.warned{ background:var(--pink); border-color:var(--pink); color:var(--bg); outline:2px solid var(--bg); outline-offset:0; }
+  .cell.paired{ border-width:6px; }
+  .cell.predator.swappableNow{ border-style:solid; }
+  .cell.bonus{
+    background:var(--green); color:var(--bg); font-size:22px;
+  }
+  .cell.poison{
+    background-image:
+      linear-gradient(to bottom right, transparent calc(50% - 1.4px), var(--green) calc(50% - 1.4px), var(--green) calc(50% + 1.4px), transparent calc(50% + 1.4px)),
+      linear-gradient(to bottom left, transparent calc(50% - 1.4px), var(--green) calc(50% - 1.4px), var(--green) calc(50% + 1.4px), transparent calc(50% + 1.4px));
+    background-repeat:no-repeat;
+  }
+  .cell.blank{background:transparent; border-color:var(--green-dim);}
+  .tag{position:absolute; top:1px; left:2px; font-family:"Courier New",monospace; font-size:11px; font-weight:700; letter-spacing:.02em; color:var(--green); z-index:3;}
+  .cell.predator.warned .tag{ color:var(--bg); }
+  .cell.goal .tag, .cell.bonus .tag{ display:none; }
+
+  .drainText{
+    position:absolute; top:2px; right:3px; font-family:"Courier New",monospace; font-size:8px; color:var(--ink);
+    animation: floatUp .9s ease-out forwards; z-index:4;
+  }
+  .cell.shakeFail{ animation: shakeFail .32s ease-in-out; }
+  .cell.swapPulse{ animation: swapPulse .26s ease-in-out; }
+  .cell.spinning{ opacity:.7; }
+  .cell.warnPulse{ animation: warnPulse .5s ease-in-out 2; }
+
+  @keyframes floatUp{ 0%{ opacity:1; transform:translateY(0);} 100%{ opacity:0; transform:translateY(-16px);} }
+  @keyframes shakeFail{ 0%,100%{ transform:translateX(0);} 25%{ transform:translateX(-3px);} 75%{ transform:translateX(3px);} }
+  @keyframes swapPulse{ 0%,100%{ transform:scale(1);} 50%{ transform:scale(.86);} }
+  @keyframes warnPulse{ 0%,100%{ transform:scale(1);} 50%{ transform:scale(1.08);} }
+
+  @keyframes burstBonus{ 0%{ transform:scale(1);} 45%{ transform:scale(1.18);} 100%{ transform:scale(1);} }
+  .cell.burst-bonus{ animation: burstBonus .55s ease-out; }
+  @keyframes burstHurt{ 0%,100%{ transform:translateX(0);} 20%{ transform:translateX(-4px);} 40%{ transform:translateX(4px);} 60%{ transform:translateX(-3px);} 80%{ transform:translateX(3px);} }
+  .cell.burst-poisonHurt{ animation: burstHurt .4s ease-in-out; }
+  @keyframes burstHeal{ 0%{ filter:brightness(1);} 50%{ filter:brightness(1.5);} 100%{ filter:brightness(1);} }
+  .cell.burst-poisonHeal{ animation: burstHeal .55s ease-in-out; }
+  @keyframes cardPop{ 0%{ transform:scale(.25) rotate(-6deg); opacity:0;} 65%{ transform:scale(1.15) rotate(2deg); opacity:1;} 100%{ transform:scale(1) rotate(0); opacity:1;} }
+  .loadSlot.justAdded{ animation: cardPop .42s ease-out; border-width:2.5px; }
+  @keyframes popInMult{ 0%{ transform:scale(.2) rotate(-15deg); opacity:0;} 65%{ transform:scale(1.3) rotate(8deg); opacity:1;} 100%{ transform:scale(1) rotate(0); opacity:1;} }
+  .bnum-mult{
+    animation: popInMult .34s ease forwards !important;
+    background:var(--bg); color:var(--pink); padding:2px 8px; border-radius:2px;
+  }
+
+  .tutorialTag{
+    position:absolute; top:-26px; right:0; z-index:8;
+    background:var(--green); color:var(--bg); border:1.5px solid var(--green);
+    font-family:"Courier New",monospace; font-size:9px; padding:3px 7px; white-space:nowrap;
+  }
+  .tutorialTag::after{
+    content:''; position:absolute; bottom:-6px; right:14px; width:0; height:0;
+    border-left:5px solid transparent; border-right:5px solid transparent; border-top:6px solid var(--green);
+  }
+
+  .bridge{
+    position:absolute; z-index:6; border-radius:2px;
+    background:var(--green); border:1.5px solid var(--green);
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    color:var(--bg); font-weight:700; font-size:15px;
+  }
+  .bridge .bnum{ transition:opacity .18s ease, transform .18s ease; }
+  .bridge.merging .bnum-target{ opacity:0; transform:scale(.25); }
+  .bnum-gained{ font-size:17px; transform:scale(.3); opacity:0; animation:popIn .26s ease forwards; }
+  .bnum-tie::after{ content:" ×2"; font-size:10px; opacity:.85; }
+  @keyframes popIn{ to{ transform:scale(1); opacity:1; } }
+
+  .msg{font-family:"Courier New",monospace; font-size:10px; text-align:center; min-height:13px; color:var(--ink);}
+  .msg.warn{font-weight:700; color:var(--pink);}
+
+  .log{
+    flex:1; min-height:0; overflow-y:auto; font-family:"Courier New",monospace; font-size:9px; color:var(--ink-dim);
+    line-height:1.55; border-top:1.5px dashed var(--green); padding-top:6px; opacity:.9;
+  }
+  .log div::before{content:"> ";}
+  .exportRow{
+    font-family:"Courier New",monospace; font-size:9px; color:var(--green-dim);
+    text-align:center; padding-top:6px; cursor:pointer; flex-shrink:0;
+  }
+  .exportRow:active{ color:var(--green); }
+
+  .row{display:flex; gap:6px;}
+  button{
+    font-family:"Space Grotesk", sans-serif; font-size:11px; font-weight:700; padding:11px 12px;
+    border:1.5px solid var(--green); border-radius:2px; background:var(--bg); color:var(--green); cursor:pointer;
+    letter-spacing:.03em; text-transform:uppercase;
+  }
+  button.filled{background:var(--green); color:var(--bg);}
+  button:disabled{opacity:.35; cursor:default;}
+  button.block{width:100%;}
+
+  .overlay{
+    position:fixed; inset:0; background:rgba(18,51,29,.45); z-index:100;
+    display:flex; align-items:center; justify-content:center; padding:16px;
+  }
+  .card{
+    background:var(--bg); border:1.5px solid var(--green); max-width:360px; width:100%;
+    max-height:90dvh; overflow-y:auto; padding:16px; color:var(--ink);
+  }
+  .cardTitle{font-size:16px; margin-bottom:2px; font-weight:700;}
+  .cardSub{font-family:"Courier New",monospace; font-size:9px; color:var(--ink-dim); letter-spacing:.06em; margin-bottom:10px;}
+
+  .receiptCard{ background:var(--green); color:var(--bg); border:none; padding:20px 18px; }
+  .receiptHead{text-align:center; margin-bottom:8px;}
+  .receiptHead .biz{font-size:16px; font-weight:700; letter-spacing:.06em;}
+  .receiptHead .biz-sub{font-family:"Courier New",monospace; font-size:9px; opacity:.85; margin-top:2px;}
+  .shopTitle{
+    font-size:38px; font-weight:800; letter-spacing:.06em;
+    color:var(--bg);
+  }
+  .stamp{
+    display:inline-block; margin-top:8px; padding:3px 10px; border:1.5px solid var(--bg);
+    font-size:9px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  }
+  .co-score{ font-size:46px; font-weight:700; line-height:1; text-align:center; margin:12px 0 2px; font-variant-numeric:tabular-nums; }
+  .co-score .unit{font-size:15px; opacity:.85; margin-left:4px;}
+  .co-sub{font-family:"Courier New",monospace; font-size:9px; text-align:center; opacity:.85; margin-bottom:10px; letter-spacing:.04em;}
+  .coinMathRow{ display:grid; grid-template-columns:.85fr 12px .85fr 12px 1.3fr; align-items:end; gap:2px; margin:8px 0 10px; }
+  .coinBox{ border:1.5px solid var(--bg); padding:6px 3px; text-align:center; opacity:.8; }
+  .coinBox .cap{ font-family:"Courier New",monospace; font-size:7px; opacity:.85; letter-spacing:.04em; }
+  .coinBox .num{ font-size:14px; font-weight:700; margin-top:2px; }
+  .coinBox.total{ border-width:2.5px; border-color:var(--pink); opacity:1; padding:9px 4px; background:var(--bg); outline:2px solid var(--bg); outline-offset:0; }
+  .coinBox.total .cap{ color:var(--pink); opacity:1; font-weight:700; }
+  .coinBox.total .num{ font-size:26px; color:var(--pink); }
+  .coinOp{ text-align:center; font-size:13px; opacity:.85; padding-bottom:8px; }
+  .co-divider{border-top:2px dashed var(--bg); opacity:.6; margin:8px 0;}
+
+  .shopGrid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .shopBox{
+    display:flex; flex-direction:column; align-items:center; text-align:center; gap:5px;
+    border:1.5px solid var(--bg); padding:10px 6px 8px; cursor:pointer; min-height:158px; position:relative;
+  }
+  .shopBox:active{ background:rgba(245,239,201,.15); }
+  .shopBox.disabled{ opacity:.4; cursor:default; }
+  .shopBox.unaffordable{ opacity:.45; }
+  .rarityTag{ font-family:"Courier New",monospace; font-size:6.5px; letter-spacing:.08em; opacity:.7; }
+  .priceTag{ margin-top:auto; font-weight:700; font-size:11px; border-top:1px dotted var(--bg); padding-top:5px; width:100%; }
+  .shopBox .ic{ font-size:22px; }
+  .shopBox b{ display:block; font-family:"Space Grotesk",sans-serif; font-size:10.5px; line-height:1.25; }
+  .shopBox .d{ font-family:"Courier New",monospace; font-size:7.5px; opacity:.85; line-height:1.35; }
+  .shopBox .price{ margin-top:auto; width:100%; font-weight:700; font-size:12px; border-top:1px dotted var(--bg); padding-top:5px; }
+
+  .receiptCard button{ border-color:var(--bg); color:var(--bg); background:transparent; }
+  .receiptCard button.filled{ background:var(--bg); color:var(--green); border-color:var(--bg); }
+  .receiptCard .row{ align-items:stretch; }
+  .receiptCard .row .secondaryBtn{ flex:1; }
+  .receiptCard .row .primaryBtn{ flex:2; font-size:13px; }
+
+  .co-thanks{font-family:"Courier New",monospace; text-align:center; font-size:9px; opacity:.85; margin-top:14px; letter-spacing:.03em;}
+
+  .progressWrap{ margin-top:14px; }
+  .progressCap{font-family:"Courier New",monospace; font-size:8px; opacity:.85; letter-spacing:.06em; margin-bottom:5px;}
+
+  .bubbleCard{
+    background:var(--bg); border:1.5px solid var(--green); max-width:320px; width:100%;
+    padding:22px 20px 18px; position:relative; margin-top:14px;
+  }
+  .bubbleTail{
+    position:absolute; top:-10px; left:32px; width:16px; height:16px;
+    background:var(--bg); border-left:1.5px solid var(--green); border-top:1.5px solid var(--green);
+    transform:rotate(45deg);
+  }
+  .bubbleEyebrow{ font-family:"Courier New",monospace; font-size:9px; letter-spacing:.14em; color:var(--green); font-weight:700; text-transform:uppercase; margin-bottom:10px; }
+  .bubbleBody{ font-size:13px; color:var(--ink); line-height:1.85; min-height:100px; }
+  .bubbleBody b{ color:var(--green); }
+  .bubbleFooter{ display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:14px; border-top:1px dashed var(--green); }
+  .bubblePageNum{ font-family:"Courier New",monospace; font-size:9px; color:var(--green-dim); letter-spacing:.05em; }
+  #introNextBtn{ padding:8px 16px; }
+  .termNow{ display:flex; align-items:center; gap:14px; }
+  .termCircle{
+    width:52px; height:52px; border-radius:50%; border:2px solid var(--pink); flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; line-height:1; background:var(--bg);
+    font-size:20px; font-weight:700; color:var(--pink);
+    outline:2px solid var(--bg); outline-offset:0;
+  }
+  .termCircleSub{ font-family:"Courier New",monospace; font-size:10px; opacity:.9; margin-left:1px; line-height:1; }
+  .termNowRight{ flex:1; }
+  .tnum{ font-family:"Courier New",monospace; font-size:9px; letter-spacing:.04em; margin-bottom:6px; }
+  .termPips{ display:flex; align-items:center; gap:6px; }
+  .pip{ width:9px; height:9px; border-radius:50%; border:1.5px solid var(--bg); }
+  .pip.filled{ background:var(--bg); }
+  .pip.current{ outline:2px solid rgba(245,239,201,.5); outline-offset:1px; }
+  .pip.boss{ border-radius:1px; transform:rotate(45deg); width:8px; height:8px; }
+  .mapLegend{ font-family:"Courier New",monospace; font-size:7.5px; opacity:.85; text-align:center; margin-top:8px; }
+</style>
+</head>
+<body>
+
+<div class="loading-screen" id="loadingScreen">
+  <div class="virus-wrap">
+    <svg class="virus-svg" viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="15" fill="none" stroke="var(--green)" stroke-width="1.5"/>
+      <circle cx="100" cy="100" r="30" fill="none" stroke="var(--green)" stroke-width="1.5"/>
+      <circle cx="100" cy="100" r="45" fill="none" stroke="var(--green)" stroke-width="1.5"/>
+      <circle cx="100" cy="100" r="60" fill="none" stroke="var(--green)" stroke-width="1.5"/>
+      <circle cx="100" cy="100" r="75" fill="none" stroke="var(--green)" stroke-width="1.5"/>
+      <circle cx="100" cy="100" r="90" fill="none" stroke="var(--green)" stroke-width="1.5"/>
+    </svg>
+  </div>
+  <div class="loading-logo">
+    <span class="loading-ext">.inc</span>
+    <span class="loading-ext-sub">incruder</span>
+  </div>
+  <div class="loading-tagline">Reach the Core. Complete the Human.<br>コアに到達し、人間を「完成」させる。</div>
+  <div class="loading-story">The colony's AI dreamed of a perfect body —<br>a virus was born to grant it.
+    <span class="ja">コロニーのAIは、完全な身体を夢見た。<br>その願いから、一つのウイルスが生まれた。</span>
+  </div>
+  <div class="loading-status">CONNECTING TO .INC<span class="dots">...</span></div>
+  <div class="loading-prompt">Tap to begin the intrusion<br>タップして、侵入を開始しよう</div>
+</div>
+
+<div class="app">
+
+
+  <div class="headerRow">
+    <div class="brand"><span class="brandBox">.inc</span><span class="sub">HOST: BIO-MACHINE #01</span></div>
+    <div style="display:flex; gap:6px; align-items:flex-start;">
+      <div class="pointsBadge"><span class="ic">$</span><span class="v" id="statCoin">-</span><span class="lbl">DATA</span></div>
+      <button class="muteBtn" id="muteBtn" onclick="toggleMute()">
+        <svg viewBox="0 0 24 24"><path class="ion" d="M4 9v6h4l5 5V4L8 9H4z"/><path class="ion" d="M16 8a5 5 0 010 8"/><path class="ioff" d="M4 9v6h4l5 5V4L8 9H4z"/><path class="ioff" d="M15 9l6 6M21 9l-6 6"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="hr"></div>
+  <div class="bossBadge" id="bossBadge"></div>
+
+  <div class="stats compact">
+    <div class="stat hero"><div class="k"><span class="ic">▣</span>コスト</div><div class="v" id="statAP">-</div></div>
+    <div class="stat"><div class="k"><span class="ic">●</span>感染力</div><div class="v" id="statPower">-</div></div>
+    <div class="stat minor"><div class="k"><span class="ic">§</span>セクタ</div><div class="v" id="statStage">-</div></div>
+  </div>
+
+  <div class="loadout compact" id="loadoutMain"></div>
+
+  <div class="boardWrap"><div class="board" id="board"></div></div>
+  <div class="sideViewWrap">
+    <div class="sideViewLabel">SIDE VIEW — お得マス・危険マスは横からしか分からない</div>
+    <div class="sideView" id="sideView"></div>
+  </div>
+  <div class="msg" id="msg"></div>
+
+  <div class="row">
+    <button class="block" onclick="stepManual()">◐ WAIT（隣接を侵食）</button>
+  </div>
+
+  <div class="log" id="log"></div>
+  <div class="exportRow" id="exportRow" onclick="copyPlaytestData()">📋 プレイ記録をコピー <span id="exportCount">(0件)</span></div>
+</div>
+
+<div class="overlay" id="shopOverlay" style="display:none;">
+  <div class="card receiptCard">
+    <div class="receiptHead">
+      <div class="shopTitle">{{{SHOP}}}</div>
+    </div>
+
+    <div class="coinMathRow" id="mathRow">
+      <div class="coinBox"><div class="cap">所持</div><div class="num" id="mathBefore">0</div></div>
+      <div class="coinOp">+</div>
+      <div class="coinBox"><div class="cap">突破報酬</div><div class="num" id="mathEarned">0</div></div>
+      <div class="coinOp">=</div>
+      <div class="coinBox total"><div class="cap">使用可能</div><div class="num" id="mathTotal">0</div></div>
+    </div>
+
+    <div class="co-divider"></div>
+
+    <div class="shopCards" id="shopCards"></div>
+
+    <div class="co-divider"></div>
+    <div class="row">
+      <button id="rerollBtn" class="secondaryBtn" onclick="reroll()">RESHUFFLE</button>
+      <button class="filled primaryBtn" onclick="closeShop()">→ 次のセクタへ進む</button>
+    </div>
+
+    <div class="progressWrap">
+      <div class="progressCap">SECTOR PROGRESS — 現在地</div>
+      <div id="progressGraph"></div>
+    </div>
+
+    <div class="co-thanks">GOOD LUCK, INTRUDER.</div>
+  </div>
+</div>
+
+<div class="overlay" id="overOverlay" style="display:none;">
+  <div class="card">
+    <div class="cardTitle">CONNECTION TERMINATED</div>
+    <div style="font-family:'Courier New',monospace; font-size:11px; margin-bottom:10px;" id="overReason"></div>
+    <button class="block filled" onclick="location.reload()">再侵入する</button>
+    <button class="block" style="margin-top:8px;" onclick="copyPlaytestData()">📋 プレイ記録をコピー（テスト協力用）</button>
+  </div>
+</div>
+
+<div class="overlay" id="clearOverlay" style="display:none;">
+  <div class="card receiptCard">
+    <div class="receiptHead">
+      <div class="biz">MISSION COMPLETE</div>
+      <div class="biz-sub">生命機械 BIO-MACHINE #01 — 制圧完了</div>
+      <div class="stamp">CLEAR</div>
+    </div>
+    <div class="co-score" id="clearPower">0<span class="unit">感染力</span></div>
+    <div class="co-sub">全6ターム・18セクタを踏破した</div>
+    <div class="co-divider"></div>
+    <button class="block filled" onclick="location.reload()">再侵入する（NEW GAME+）</button>
+    <button class="block" style="margin-top:8px; border-color:var(--bg); color:var(--bg);" onclick="copyPlaytestData()">📋 プレイ記録をコピー（テスト協力用）</button>
+  </div>
+</div>
+
+<div class="overlay" id="introOverlay" style="display:none;">
+  <div class="bubbleCard">
+    <div class="bubbleTail"></div>
+    <div class="bubbleEyebrow" id="introEyebrow"></div>
+    <div class="bubbleBody" id="introBody"></div>
+    <div class="bubbleFooter">
+      <div class="bubblePageNum" id="introPageNum"></div>
+      <button class="block filled" id="introNextBtn" onclick="introNext()">次へ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SIZE = 5, CELL = 54, GAP = 4, STEP = CELL+GAP;
+const START_R = SIZE-1, START_C = 0, GOAL_R = 0, GOAL_C = SIZE-1;
+const BASE_POWER = 5;
+const BASE_AP = 13;
+const DRAIN_AMOUNT = 1;
+const MERGE_MS = 230, SETTLE_MS = 230;
+const STAGES_PER_TERM = 3, TOTAL_TERMS = 6, TOTAL_STAGES = STAGES_PER_TERM*TOTAL_TERMS;
+
+const BOSS_RESTRICTIONS = [
+  {id:'no_drain', label:'ドレイン封印', desc:'このセクタ中、隣接する敵への侵食ダメージが発生しない'},
+  {id:'no_swap', label:'交換封印', desc:'このセクタ中、位置交換が使えない（負けたら問答無用でコスト-2）'},
+  {id:'low_ap', label:'低燃料警報', desc:'このセクタの処理コスト上限が-4される'},
+];
+
+const ICONS = {
+  player:'●\uFE0E', enemy:'■\uFE0E', predator:'✚\uFE0E', bonus:'✦\uFE0E', mover:'➤\uFE0E',
+  avoid:'◐\uFE0E', weaken:'▽\uFE0E', round:'◇\uFE0E', swap:'⇄\uFE0E',
+  plus1:'+', plus3:'+', mult:'✳\uFE0E',
+  perm_power:'↑\uFE0E', perm_ap:'▣\uFE0E', perm_drain:'≋\uFE0E', coin:'$',
+  poison_immune:'♦\uFE0E', bonus_boost:'✦\uFE0E', predator_discount:'⇄\uFE0E', grace:'◐\uFE0E',
+};
+
+const CARD_POOL = [
+  {id:'power', name:'初期コード強化', icon:ICONS.perm_power, desc:'毎セクタの初期感染力が+3される', rarity:'COMMON', price:4},
+  {id:'ap', name:'処理能力強化', icon:ICONS.perm_ap, desc:'毎セクタの処理コスト上限が+3される', rarity:'COMMON', price:4},
+  {id:'drain', name:'侵食力強化', icon:ICONS.perm_drain, desc:'隣接する敵への毎ターンダメージが+1される', rarity:'COMMON', price:4},
+  {id:'chain', name:'感染連鎖強化', icon:'+', desc:'敵を倒した時に増える量が+1から+4になる', rarity:'COMMON', price:5},
+  {id:'bonus', name:'貪欲な複製', icon:ICONS.bonus, desc:'お得マス（✦）の効果が×2から×3になる', rarity:'UNCOMMON', price:6},
+  {id:'poison', name:'毒耐性', icon:ICONS.poison_immune, desc:'毒マス（×柄）を踏むと、逆に感染力+2になる', rarity:'UNCOMMON', price:6},
+  {id:'swapcost', name:'交渉術', icon:ICONS.swap, desc:'位置交換のコストが-3から-2になる', rarity:'UNCOMMON', price:6},
+  {id:'grace', name:'擬態強化', icon:ICONS.grace, desc:'白血球に見つかっても、逃げる猶予がもう1ターン増える', rarity:'UNCOMMON', price:7},
+  {id:'dormant', name:'潜伏戦略', icon:'≋\uFE0E', desc:'最初の3手はドレインが発動しないが、4手目以降はドレイン量が+3される', rarity:'UNCOMMON', price:7},
+  {id:'mult', name:'自己複製', icon:ICONS.mult, desc:'敵を倒すと足し算ではなく掛け算で増えるようになる（最大×4）', rarity:'RARE', price:9},
+  {id:'voracious', name:'大食い', icon:'+', desc:'敵を倒した時の増加量が2倍になるが、突破のたびにコストをさらに-1多く消費する', rarity:'RARE', price:9},
+  {id:'burst', name:'初期特攻', icon:'✳\uFE0E', desc:'初期感染力が+15される。ただし1手動くたびに-1ずつ減っていく（1未満にはならない）', rarity:'RARE', price:10},
+  {id:'heavymult', name:'重量掛け算', icon:'✳\uFE0E', desc:'敵を倒すと掛け算で増えるが、処理コスト上限が-6される（最大×6）', rarity:'RARE', price:11},
+];
+
+let run=null, state=null, shopStock=[], pendingCardIndex=null;
+
+function log(t){ const el=document.getElementById('log'); el.innerHTML=`<div>${t}</div>`+el.innerHTML; }
+function setMsg(t,warn){ const el=document.getElementById('msg'); el.textContent=t; el.className='msg'+(warn?' warn':''); }
+
+// --- プレイテストデータの収集（localStorageに保存し、まとめてコピーできる） ---
+const PLAYTEST_KEY = 'inc_playtest_v1';
+function loadPlaytestData(){
+  try{ return JSON.parse(localStorage.getItem(PLAYTEST_KEY)||'[]'); }catch(e){ return []; }
+}
+function savePlaytestRun(entry){
+  const data = loadPlaytestData();
+  data.push(entry);
+  try{ localStorage.setItem(PLAYTEST_KEY, JSON.stringify(data)); }catch(e){}
+  updateExportCount();
+}
+function recordRunEnd(result){
+  if(!state || state.recorded) return;
+  state.recorded = true;
+  const term = Math.ceil((run?run.stage:1) / STAGES_PER_TERM);
+  let cause = '';
+  if(result==='eaten') cause = `白血球（耐性${state.eatenBy}）に捕食された`;
+  else if(result==='timeout') cause = '処理コストが尽きた';
+  else if(result==='clear') cause = '全18セクタをクリアした';
+  savePlaytestRun({
+    time: new Date().toISOString(),
+    result: result, // 'eaten' | 'timeout' | 'clear'
+    cause: cause,
+    stageReached: run ? run.stage : null,
+    termReached: `${term}/${TOTAL_TERMS}`,
+    finalPower: state ? state.power : null,
+    finalAP: state ? state.ap : null,
+    maxPowerSeen: run ? (run.maxPowerSeen||state.power) : null,
+    maxEnemyValueSeen: run ? (run.maxEnemyValueSeen||null) : null,
+    maxDifficultyTotalSeen: run ? (run.maxDifficultyTotalSeen||null) : null,
+    cardsHeld: run ? run.cards.map(id=>{ const c=CARD_POOL.find(x=>x.id===id); return c?c.name:id; }) : []
+  });
+}
+function updateExportCount(){
+  const el = document.getElementById('exportCount');
+  if(el) el.textContent = `(${loadPlaytestData().length}件)`;
+}
+function copyPlaytestData(){
+  const data = loadPlaytestData();
+  const text = JSON.stringify(data, null, 2);
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>{
+      setMsg(`プレイ記録（${data.length}件）をコピーしました`);
+    }).catch(()=>{ window.prompt('コピーできなかったので、下のテキストを手動でコピーしてください', text); });
+  } else {
+    window.prompt('下のテキストをコピーしてください', text);
+  }
+}
+function clearPlaytestData(){
+  try{ localStorage.removeItem(PLAYTEST_KEY); }catch(e){}
+  updateExportCount();
+}
+
+function initGame(){
+  run = { cards:[], stage:1, coin:0, rerollCost:3, history:[] };
+  recomputeFromCards();
+  renderLoadout();
+  updateExportCount();
+  log('凡例：■抗体（免疫の基本単位。勝てば連結して吸収、負けそうなら位置交換⇄で切り抜けられる）／➤徘徊する抗体（時々動く）／✚白血球（強い時だけ倒せる、弱いと危険なので近づくな）／✦お得マス・×柄危険マスはどちらも俯瞰では見えない。下のSIDE VIEWで確認を／緑地=CORE（目的地）');
+  showIntro();
+}
+
+const INTRO_PAGES = [
+  { eyebrow:'画面上部の見方', body:'<b>処理コスト</b>が0になったら終了。\n一番重要な数字だ。\n<b>感染力</b>は自分の強さ、\n<b>DATA</b>はカードのリロールに使う。' },
+  { eyebrow:'基本ルール', body:'隣接する<b>■抗体</b>と数字を比べる。\n自分が<b>強ければ飲み込んで+1</b>、\n<b>弱ければ位置を交換</b>する（コスト消費）。\nこれが全ての土台になる。' },
+  { eyebrow:'特殊マス', body:'<b>✦お得マス</b>と<b>危険マス</b>は俯瞰では見えない。\n下の<b>SIDE VIEW</b>を見れば分かる。\n右上の<b>緑地＝CORE</b>がゴールだ。' },
+  { eyebrow:'白血球に注意', body:'<b>✚白血球</b>は強い時だけ倒せる。\n弱いまま8マス以内に居続けると、\n警告の後に捕食されてしまう。' },
+];
+let introIndex = 0;
+function showIntro(){
+  introIndex = 0;
+  renderIntroPage();
+  document.getElementById('introOverlay').style.display='flex';
+}
+function renderIntroPage(){
+  const p = INTRO_PAGES[introIndex];
+  document.getElementById('introEyebrow').textContent = p.eyebrow;
+  document.getElementById('introBody').innerHTML = p.body.replace(/\n/g,'<br>');
+  document.getElementById('introPageNum').textContent = `${introIndex+1} / ${INTRO_PAGES.length}`;
+  document.getElementById('introNextBtn').textContent = (introIndex===INTRO_PAGES.length-1) ? '始める' : '次へ';
+}
+function introNext(){
+  if(introIndex < INTRO_PAGES.length-1){
+    introIndex++;
+    renderIntroPage();
+  } else {
+    document.getElementById('introOverlay').style.display='none';
+    buildStage();
+  }
+}
+
+function recomputeFromCards(){
+  run.permPower=0; run.permAP=0; run.permDrain=0;
+  run.bonusMult=2; run.poisonImmune=false; run.swapCost=3; run.graceTurns=1;
+  run.chainBonus=1; run.multActive=false; run.multCap=4;
+  run.burstActive=false; run.voraciousActive=false; run.dormantActive=false;
+  run.cards.forEach(id=>{
+    if(id==='power') run.permPower+=3;
+    if(id==='ap') run.permAP+=3;
+    if(id==='drain') run.permDrain+=1;
+    if(id==='bonus') run.bonusMult=3;
+    if(id==='poison') run.poisonImmune=true;
+    if(id==='swapcost') run.swapCost=2;
+    if(id==='grace') run.graceTurns=2;
+    if(id==='chain') run.chainBonus=4;
+    if(id==='mult'){ run.multActive=true; run.multCap=4; }
+    if(id==='burst'){ run.burstActive=true; run.permPower+=15; }
+    if(id==='heavymult'){ run.multActive=true; run.permAP-=6; run.multCap=Math.max(run.multCap||0,6); }
+    if(id==='voracious') run.voraciousActive=true;
+    if(id==='dormant') run.dormantActive=true;
+  });
+}
+
+let highlightSlot = null;
+function buildLoadoutMarkup(){
+  let html='';
+  for(let i=0;i<3;i++){
+    const cid = run.cards[i];
+    const pop = i===highlightSlot ? ' justAdded' : '';
+    if(cid){
+      const c = CARD_POOL.find(x=>x.id===cid);
+      html += `<div class="loadSlot${pop}"><div class="ic">${c.icon}</div><div class="nm">${c.name}</div></div>`;
+    } else {
+      html += `<div class="loadSlot empty${pop}"><div class="ic">+</div><div class="nm">空きスロット</div></div>`;
+    }
+  }
+  return html;
+}
+function renderLoadout(){
+  document.getElementById('loadoutMain').innerHTML = buildLoadoutMarkup();
+}
+
+function buildStage(){
+  const isBoss = run.stage % STAGES_PER_TERM === 0;
+  const restriction = isBoss ? BOSS_RESTRICTIONS[Math.floor(Math.random()*BOSS_RESTRICTIONS.length)] : null;
+
+  const grid=[];
+  for(let r=0;r<SIZE;r++){ const row=[]; for(let c=0;c<SIZE;c++) row.push({type:'empty'}); grid.push(row); }
+  grid[GOAL_R][GOAL_C]={type:'goal'};
+
+  const empties=[];
+  for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++){
+    if((r===START_R&&c===START_C)||(r===GOAL_R&&c===GOAL_C)) continue;
+    empties.push([r,c]);
+  }
+  shuffle(empties);
+  const leaveSpecial=3;
+  const fillCount=empties.length-leaveSpecial;
+
+  const basePower = BASE_POWER + run.permPower;
+
+  // 全体の合計値を難易度として扱う：150からスタートし、ステージごとに10〜20ずつゆるやかに増える
+  const totalDifficulty = 150 + (run.stage-1) * (10 + Math.floor(Math.random()*11));
+  run.maxDifficultyTotalSeen = Math.max(run.maxDifficultyTotalSeen||0, totalDifficulty);
+
+  const values = [];
+  let remaining = totalDifficulty;
+  const guaranteedCount = 3;
+  for(let i=0;i<guaranteedCount;i++){
+    values.push(1 + Math.floor(Math.random()*2)); // 序盤の突破口となる保証枠
+    remaining -= values[i];
+  }
+  const randCount = fillCount - guaranteedCount;
+  const weights = [];
+  let wSum = 0;
+  for(let i=0;i<randCount;i++){ const w=Math.pow(Math.random(),2.2); weights.push(w); wSum+=w; } // 二乗で偏らせ、大半を低め・一部だけ突出させる
+  for(let i=0;i<randCount;i++){
+    values.push(Math.max(1, Math.round(remaining * weights[i]/wSum)));
+  }
+  const maxCellValue = Math.max(...values);
+  run.maxEnemyValueSeen = Math.max(run.maxEnemyValueSeen||0, maxCellValue);
+  run.history.push({stage:run.stage, high:maxCellValue, totalDifficulty});
+
+  for(let i=0;i<fillCount;i++){
+    const [r,c]=empties[i];
+    grid[r][c]={type:'enemy', value:values[i], mover:Math.random()<0.3, infected:false, drained:0};
+  }
+  const [br,bc] = empties[fillCount];
+  grid[br][bc] = {type:'bonus'};
+  const [pr2,pc2] = empties[fillCount+1];
+  grid[pr2][pc2] = {type:'poison'};
+
+  const predatorChance = isBoss ? 1 : Math.min(0.95, 0.15 + (run.stage-1)*0.20);
+  if(Math.random() < predatorChance){
+    const enemyCells=[];
+    for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++) if(grid[r][c].type==='enemy') enemyCells.push([r,c]);
+    if(enemyCells.length){
+      const [er,ec]=enemyCells[Math.floor(Math.random()*enemyCells.length)];
+      const predValue = maxCellValue+4+Math.floor(Math.random()*5) + (isBoss?5:0);
+      grid[er][ec]={type:'predator', value:predValue, infected:false, drained:0, warned:false, warnCount:0};
+      if(Math.random()<0.4){
+        const dirs=[[er-1,ec],[er+1,ec],[er,ec-1],[er,ec+1]].filter(([nr,nc])=>
+          nr>=0&&nr<SIZE&&nc>=0&&nc<SIZE&&grid[nr][nc].type==='enemy');
+        if(dirs.length){
+          const [nr,nc]=dirs[Math.floor(Math.random()*dirs.length)];
+          grid[nr][nc]={type:'predator', value:predValue, infected:false, drained:0, warned:false, warnCount:0, pairWith:[er,ec]};
+          grid[er][ec].pairWith=[nr,nc];
+        }
+      }
+    }
+  }
+
+  // 3桁（100）以上の数字は、敵でも白血球でもマス2つ分の大きなコマになる
+  for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++){
+    const cell = grid[r][c];
+    if((cell.type==='enemy'||cell.type==='predator') && cell.value>=100 && !cell.pairWith){
+      const dirs=[[r-1,c],[r+1,c],[r,c-1],[r,c+1]].filter(([nr,nc])=>
+        nr>=0&&nr<SIZE&&nc>=0&&nc<SIZE && (grid[nr][nc].type==='empty' || (grid[nr][nc].type==='enemy' && !grid[nr][nc].pairWith)));
+      if(dirs.length){
+        const [nr,nc] = dirs[Math.floor(Math.random()*dirs.length)];
+        grid[nr][nc] = {type:cell.type, value:cell.value, mover:false, infected:false, drained:0, warned:false, warnCount:0, pairWith:[r,c]};
+        cell.pairWith = [nr,nc];
+      }
+    }
+  }
+
+  const apLimit = BASE_AP + run.permAP - (restriction && restriction.id==='low_ap' ? 4 : 0);
+  state = { grid, pos:{r:START_R,c:START_C}, power:basePower, ap:apLimit, busy:false, engulf:null, eaten:false, bossRestriction:restriction, actionCount:0, burstFx:null };
+  document.getElementById('shopOverlay').style.display='none';
+  setMsg('');
+
+  const badge = document.getElementById('bossBadge');
+  if(isBoss){
+    badge.style.display='block';
+    badge.innerHTML = `<b>⚠ BOSS SECTOR ${run.stage}</b><br>${restriction.label}：${restriction.desc}／白血球出現確定`;
+    log(`⚠ BOSS SECTOR ${run.stage}：${restriction.label}（${restriction.desc}）／白血球の出現が確定`);
+  } else {
+    badge.style.display='none';
+  }
+  log(`SECTOR ${run.stage} 侵入開始（感染力${state.power} / コスト${state.ap} / 難易度合計${totalDifficulty} / 最大値${maxCellValue} / 白血球出現率${Math.round(predatorChance*100)}%）`);
+  revealStage();
+}
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } }
+
+function revealStage(){
+  state.busy = true;
+  const board = document.getElementById('board');
+  board.innerHTML='';
+  const cellEls=[];
+  for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++){
+    const div=document.createElement('div');
+    div.className='cell spinning';
+    board.appendChild(div);
+    cellEls.push({r,c,div});
+  }
+  let ticks=0; const maxTicks=9;
+  const spin=setInterval(()=>{
+    ticks++;
+    cellEls.forEach(({r,c,div})=>{
+      const d=state.grid[r][c];
+      if(d.type==='enemy'||d.type==='predator'){ div.textContent = 1+Math.floor(Math.random()*30); div.style.opacity='.6'; }
+      else if(d.type==='bonus'){ div.textContent=''; }
+      else if(d.type==='poison'){ div.textContent=''; }
+      else if(d.type==='goal'){ div.className='cell spinning goal'; div.textContent=''; }
+      else { div.textContent=''; }
+    });
+    if(ticks>=maxTicks){
+      clearInterval(spin);
+      state.busy=false;
+      render();
+    }
+  }, 65);
+}
+
+function movable(r,c){
+  if(state.busy) return false;
+  const dr=Math.abs(r-state.pos.r), dc=Math.abs(c-state.pos.c);
+  return dr+dc===1;
+}
+
+function renderSideView(){
+  const el = document.getElementById('sideView');
+  if(!el) return;
+  const r = state.pos.r;
+  let html = '';
+  for(let c=0;c<SIZE;c++){
+    const cellData = state.grid[r][c];
+    const isPlayerHere = (r===state.pos.r && c===state.pos.c);
+    let inner;
+    if(isPlayerHere){
+      inner = `<div class="sideBigNum player">${ICONS.player}${state.power}</div>`;
+    } else if(cellData.type==='goal'){
+      inner = `<div class="sideVal">&nbsp;</div><div class="sideGoal"></div>`;
+    } else if(cellData.type==='poison'){
+      // 俯瞰では見えない危険：横から見た時だけ×が見える
+      inner = `<div class="sideDanger">×</div><div class="sideEmpty"></div>`;
+    } else if(cellData.type==='bonus'){
+      // 俯瞰では見えないお宝：横から見た時だけキラッと見える
+      inner = `<div class="sideTreasure">${ICONS.bonus}</div><div class="sideEmpty"></div>`;
+    } else if(cellData.type==='empty'){
+      inner = `<div class="sideVal">&nbsp;</div><div class="sideEmpty"></div>`;
+    } else if(cellData.type==='enemy' || cellData.type==='predator'){
+      const isPred = cellData.type==='predator';
+      inner = `<div class="sideBigNum${isPred?' predatorNum':''}">${cellData.value}</div>`;
+    } else {
+      inner = `<div class="sideVal">&nbsp;</div><div class="sideEmpty"></div>`;
+    }
+    html += `<div class="sideSlot">${inner}</div>`;
+  }
+  el.innerHTML = html;
+}
+
+function render(){
+  if(run && state) run.maxPowerSeen = Math.max(run.maxPowerSeen||0, state.power);
+  document.getElementById('statPower').textContent=state.power;
+  document.getElementById('statAP').textContent=state.ap;
+  document.getElementById('statStage').textContent=run.stage;
+  document.getElementById('statCoin').textContent=run.coin;
+
+  const board=document.getElementById('board');
+  board.innerHTML='';
+  for(let r=0;r<SIZE;r++){
+    for(let c=0;c<SIZE;c++){
+      const cellData=state.grid[r][c];
+      const div=document.createElement('div');
+      let cls='cell'; let inner=''; let clickable=false;
+      const suppressed = state.engulf && ((state.engulf.pr===r&&state.engulf.pc===c)||(state.engulf.r===r&&state.engulf.c===c));
+
+      if(suppressed){ cls+=' blank'; }
+      else if(r===state.pos.r && c===state.pos.c){
+        cls+=' player'; inner=`${ICONS.player}${state.power}`;
+        if(state.power>=100) cls+=' big';
+        if(state.burstFx){ cls+=' burst-'+state.burstFx; state.burstFx=null; }
+      }
+      else if(cellData.type==='goal'){ cls+=' goal'; inner=''; clickable = movable(r,c)&&state.ap>0; }
+      else if(cellData.type==='empty'){ clickable = movable(r,c)&&state.ap>0; }
+      else if(cellData.type==='bonus'){ clickable = movable(r,c)&&state.ap>0; }
+      else if(cellData.type==='poison'){ clickable = movable(r,c)&&state.ap>0; }
+      else if(cellData.type==='enemy'){
+        cls += ' enemy';
+        if(cellData.pairWith) cls+=' paired';
+        if(cellData.infected) cls+=' infected';
+        const tagIcon = cellData.mover?ICONS.mover:'';
+        inner = (tagIcon?`<span class="tag">${tagIcon}</span>`:'') + cellData.value;
+        if(cellData.drained>0) inner += `<span class="drainText">-${cellData.drained}</span>`;
+        clickable = movable(r,c)&&state.ap>0;
+      }
+      else if(cellData.type==='predator'){
+        cls += ' predator';
+        if(cellData.pairWith) cls+=' paired';
+        if(cellData.infected) cls+=' infected';
+        if(cellData.warned) cls+=' warned warnPulse';
+        inner = `<span class="tag">${ICONS.predator}</span>${cellData.value}`;
+        if(cellData.drained>0) inner += `<span class="drainText">-${cellData.drained}</span>`;
+        clickable = movable(r,c) && state.ap>0 && state.power>cellData.value;
+      }
+
+      if(clickable) cls+=' movable';
+      div.className=cls;
+      div.innerHTML=inner;
+      if(clickable) div.onclick=()=>tryMove(r,c);
+      board.appendChild(div);
+    }
+  }
+  renderSideView();
+
+  if(run.stage===1){
+    const tag=document.createElement('div');
+    tag.className='tutorialTag';
+    tag.textContent='制圧目標 → CORE';
+    board.appendChild(tag);
+  }
+}
+
+function tickWorld(){
+  const {r,c}=state.pos;
+  for(let rr=0;rr<SIZE;rr++) for(let cc=0;cc<SIZE;cc++){
+    const cell=state.grid[rr][cc];
+    if(cell.type==='predator'){
+      const detectRange = state.power>=100 ? 2 : 1;
+      const isAdj8 = Math.max(Math.abs(rr-r), Math.abs(cc-c)) <= detectRange;
+      if(isAdj8 && cell.value > state.power){
+        cell.warnCount = (cell.warnCount||0) + 1;
+        const threshold = (run.graceTurns||1) + 1;
+        if(cell.warnCount >= threshold){ state.eaten=true; state.eatenBy=cell.value; return; }
+        cell.warned = true;
+        state.justWarned = true;
+      } else {
+        cell.warnCount = 0;
+        cell.warned = false;
+      }
+    }
+  }
+
+  for(let r2=0;r2<SIZE;r2++) for(let c2=0;c2<SIZE;c2++){
+    const cell=state.grid[r2][c2];
+    if(cell.infected!==undefined){ cell.infected=false; cell.drained=0; }
+  }
+  const dormantSkip = run.dormantActive && (state.actionCount||0) <= 3;
+  const drainDisabled = (state.bossRestriction && state.bossRestriction.id==='no_drain') || dormantSkip;
+  if(!drainDisabled){
+    const neighbors=[[r-1,c],[r+1,c],[r,c-1],[r,c+1]].filter(([nr,nc])=>nr>=0&&nr<SIZE&&nc>=0&&nc<SIZE);
+    let drainAmt = DRAIN_AMOUNT + run.permDrain;
+    if(run.dormantActive && (state.actionCount||0) > 3) drainAmt += 3;
+    for(const [nr,nc] of neighbors){
+      const cell=state.grid[nr][nc];
+      if(cell.type==='enemy'||cell.type==='predator'){
+        const before=cell.value;
+        cell.value=Math.max(1, cell.value-drainAmt);
+        const actual=before-cell.value;
+        if(actual>0){
+          cell.infected=true; cell.drained=actual;
+          if(cell.pairWith){
+            const [pr,pc]=cell.pairWith;
+            const partner=state.grid[pr][pc];
+            if(partner){ partner.value=cell.value; partner.infected=true; partner.drained=actual; }
+          }
+        }
+      }
+    }
+  }
+  for(let r2=0;r2<SIZE;r2++) for(let c2=0;c2<SIZE;c2++){
+    const cell=state.grid[r2][c2];
+    if(cell.type==='enemy' && cell.mover && Math.random()<0.4){
+      const dirs=[[r2-1,c2],[r2+1,c2],[r2,c2-1],[r2,c2+1]].filter(([nr,nc])=>nr>=0&&nr<SIZE&&nc>=0&&nc<SIZE&&state.grid[nr][nc].type==='empty');
+      if(dirs.length){
+        const [nr,nc]=dirs[Math.floor(Math.random()*dirs.length)];
+        state.grid[nr][nc]=cell; state.grid[r2][c2]={type:'empty'};
+        log(`${ICONS.mover} 徘徊個体(${cell.value})が移動した`);
+      }
+    }
+  }
+  for(let r2=0;r2<SIZE;r2++) for(let c2=0;c2<SIZE;c2++){
+    const cell=state.grid[r2][c2];
+    if(cell.type==='predator'){
+      const nb=[[r2-1,c2],[r2+1,c2],[r2,c2-1],[r2,c2+1]].filter(([nr,nc])=>nr>=0&&nr<SIZE&&nc>=0&&nc<SIZE);
+      for(const [nr,nc] of nb){
+        const target=state.grid[nr][nc];
+        if(target.type==='enemy' && target.value < cell.value){
+          cell.value += target.value; state.grid[nr][nc]={type:'empty'};
+          if(cell.pairWith){ const [pr,pc]=cell.pairWith; if(state.grid[pr][pc]) state.grid[pr][pc].value=cell.value; }
+          log(`${ICONS.predator} 白血球が抗体(${target.value})を吸収→耐性${cell.value}`);
+          break;
+        }
+      }
+    }
+  }
+}
+
+function tryMove(r,c){
+  if(state.busy || state.ap<=0) return;
+  const target = state.grid[r][c];
+
+  if(target.type==='empty'){ state.ap-=1; state.pos={r,c}; afterAction(); return; }
+  if(target.type==='goal'){ state.ap-=1; state.pos={r,c}; render(); onGoal(); return; }
+  if(target.type==='bonus'){
+    state.ap-=1; state.pos={r,c}; state.power *= run.bonusMult;
+    state.grid[r][c]={type:'empty'};
+    state.burstFx='bonus';
+    log(`${ICONS.bonus} お得マス：感染力が×${run.bonusMult}の${state.power}に`);
+    AudioSys.sfxBonus();
+    setMsg(`お得マス！感染力×${run.bonusMult}`); afterAction(); return;
+  }
+  if(target.type==='poison'){
+    state.ap-=1; state.pos={r,c};
+    if(run.poisonImmune){
+      state.power += 2;
+      state.burstFx='poisonHeal';
+      log(`毒耐性プロトコル発動：毒マスを逆手に取り感染力+2の${state.power}に`);
+      AudioSys.sfxPoisonHeal();
+      setMsg('毒耐性：むしろ感染力が上昇');
+    } else {
+      state.power = Math.max(1, Math.floor(state.power/2));
+      state.burstFx='poisonHurt';
+      log(`毒マス：感染力が半減し${state.power}に`);
+      AudioSys.sfxPoisonHurt();
+      setMsg('毒マス…感染力が半減');
+    }
+    state.grid[r][c]={type:'empty'};
+    afterAction(); return;
+  }
+  if(target.type==='predator'){
+    if(!tryBreak(r,c,target)) { /* 弱い場合はそもそもタップできない仕様 */ }
+    return;
+  }
+  if(!tryBreak(r,c,target)){
+    if(state.bossRestriction && state.bossRestriction.id==='no_swap'){
+      state.ap-=2;
+      log(`⚠ 交換封印中：位置交換が使えない（コスト-2）`);
+      setMsg('交換が封印されている', true); AudioSys.sfxFail(); flashFail(); afterAction(); return;
+    }
+    performSwap(r,c,target);
+  }
+}
+
+function performSwap(r,c,target){
+  state.busy = true;
+  const board=document.getElementById('board');
+  const idxTarget=r*SIZE+c, idxPlayer=state.pos.r*SIZE+state.pos.c;
+  [board.children[idxTarget], board.children[idxPlayer]].forEach(el=>{ if(el) el.classList.add('swapPulse'); });
+  setTimeout(()=>{
+    const pr=state.pos.r, pc=state.pos.c;
+    const snap={...target};
+    if(snap.pairWith){
+      const [pr2,pc2]=snap.pairWith;
+      if(state.grid[pr2] && state.grid[pr2][pc2] && state.grid[pr2][pc2].pairWith) delete state.grid[pr2][pc2].pairWith;
+      delete snap.pairWith;
+    }
+    state.grid[pr][pc]=snap;
+    state.grid[r][c]={type:'empty'};
+    state.pos={r,c};
+    state.ap-=run.swapCost;
+    state.busy=false;
+    log(`${ICONS.swap} 位置交換：抗体(耐性${target.value})と入れ替わった（コスト-${run.swapCost}）`);
+    AudioSys.sfxSwap();
+    setMsg('位置を交換した');
+    afterAction();
+  }, 260);
+}
+
+function gainedPower(enemyValue){
+  if(run.multActive) return Math.min(state.power*enemyValue, state.power*(run.multCap||4));
+  const bonus = run.voraciousActive ? run.chainBonus*2 : run.chainBonus;
+  return state.power+bonus;
+}
+function tryBreak(r,c,target){
+  if(state.power > target.value){ startEngulf(r,c,target,false); return true; }
+  if(state.power === target.value){ startEngulf(r,c,target,true); return true; }
+  return false;
+}
+function cellRect(r,c){ return {x:c*STEP, y:r*STEP, w:CELL, h:CELL}; }
+function unionRect(r1,c1,r2,c2){
+  if(r1===r2){ const x=Math.min(c1,c2)*STEP, y=r1*STEP; return {x,y,w:CELL*2+GAP,h:CELL}; }
+  const x=c1*STEP, y=Math.min(r1,r2)*STEP; return {x,y,w:CELL,h:CELL*2+GAP};
+}
+
+function startEngulf(r,c,target,isTie){
+  state.busy = true;
+  const pr=state.pos.r, pc=state.pos.c;
+  const gained = isTie ? state.power*2 : gainedPower(target.value);
+  const pairCoord = target.pairWith;
+  const startRect = cellRect(pr,pc);
+  const midRect = unionRect(pr,pc,r,c);
+  const endRect = cellRect(r,c);
+
+  state.engulf = {pr,pc,r,c};
+  render();
+
+  const board = document.getElementById('board');
+  const bridge = document.createElement('div');
+  bridge.className='bridge';
+  Object.assign(bridge.style,{left:startRect.x+'px', top:startRect.y+'px', width:startRect.w+'px', height:startRect.h+'px'});
+  bridge.innerHTML = `<span class="bnum bnum-player">${state.power}</span><span class="bnum bnum-target${isTie?' bnum-tie':''}">${target.value}</span>`;
+  board.appendChild(bridge);
+
+  requestAnimationFrame(()=>{
+    bridge.style.transition = `left ${MERGE_MS}ms ease, top ${MERGE_MS}ms ease, width ${MERGE_MS}ms ease, height ${MERGE_MS}ms ease`;
+    Object.assign(bridge.style,{left:midRect.x+'px', top:midRect.y+'px', width:midRect.w+'px', height:midRect.h+'px'});
+    bridge.classList.add('merging');
+  });
+
+  setTimeout(()=>{
+    bridge.style.transition = `left ${SETTLE_MS}ms ease, top ${SETTLE_MS}ms ease, width ${SETTLE_MS}ms ease, height ${SETTLE_MS}ms ease`;
+    Object.assign(bridge.style,{left:endRect.x+'px', top:endRect.y+'px', width:endRect.w+'px', height:endRect.h+'px'});
+    bridge.innerHTML = `<span class="bnum-gained${run.multActive?' bnum-mult':''}">${gained}</span>`;
+  }, MERGE_MS);
+
+  setTimeout(()=>{
+    const targetName = target.type==='predator' ? '白血球' : '抗体';
+    const apCost = run.voraciousActive ? 2 : 1;
+    log(isTie
+      ? `同数吸収：${targetName}(${target.value})同士が連結→2倍化で感染力${gained}（コスト-${apCost}）`
+      : `感染成功：${targetName}(${target.value})を吸収→感染力${gained}（コスト-${apCost}）`);
+    if(isTie) AudioSys.sfxTie(); else AudioSys.sfxAbsorb();
+    state.power = gained;
+    state.grid[r][c] = {type:'empty'};
+    if(pairCoord){
+      const [pr2,pc2] = pairCoord;
+      if(state.grid[pr2] && state.grid[pr2][pc2]) state.grid[pr2][pc2] = {type:'empty'};
+    }
+    state.ap -= apCost;
+    state.pos = {r,c};
+    state.engulf = null;
+    state.busy = false;
+    setMsg('感染成功');
+    afterAction();
+  }, MERGE_MS + SETTLE_MS + 30);
+}
+
+function flashFail(){
+  const board=document.getElementById('board');
+  board.classList.add('shakeFail');
+  setTimeout(()=>board.classList.remove('shakeFail'),320);
+}
+
+function afterAction(){
+  state.justWarned=false;
+  state.actionCount = (state.actionCount||0) + 1;
+  if(run.burstActive && state.power>1){ state.power = Math.max(1, state.power-1); }
+  tickWorld(); render();
+  if(state.eaten){
+    AudioSys.sfxEaten();
+    document.getElementById('overReason').innerHTML = `${ICONS.predator} 白血球（耐性${state.eatenBy}）に捕食された。到達セクタ：<b>${run.stage}</b>`;
+    document.getElementById('overOverlay').style.display='flex';
+    recordRunEnd('eaten');
+    return;
+  }
+  if(state.justWarned){
+    AudioSys.sfxWarn();
+    setMsg(`${ICONS.predator} 白血球に感知された！このままだと危険`, true);
+  }
+  if(state.ap<=0){
+    document.getElementById('overReason').innerHTML = `処理コストが尽きた。到達セクタ：<b>${run.stage}</b>`;
+    document.getElementById('overOverlay').style.display='flex';
+    recordRunEnd('timeout');
+  }
+}
+function stepManual(){ if(!state||state.busy||state.ap<=0) return; state.ap-=1; log('待機（隣接を侵食）'); afterAction(); }
+
+function onGoal(){
+  const before = run.coin;
+  const earned = state.ap;
+  run.coin += earned;
+  AudioSys.sfxClear();
+  setMsg(`CORE到達！ 残コストをデータ+${earned}に変換`);
+  log(`SECTOR ${run.stage} 突破：データ+${earned}（合計${run.coin}）`);
+  if(run.stage >= TOTAL_STAGES){
+    document.getElementById('clearPower').innerHTML = `${state.power}<span class="unit">感染力</span>`;
+    document.getElementById('clearOverlay').style.display='flex';
+    recordRunEnd('clear');
+    return;
+  }
+  openShop(before, earned);
+}
+
+function openShop(before, earned){
+  document.getElementById('mathBefore').textContent = before;
+  document.getElementById('mathEarned').textContent = earned;
+  document.getElementById('mathTotal').textContent = run.coin;
+  run.rerollCost=3;
+  pendingCardIndex=null;
+  shopStock=drawCards();
+  renderShop();
+  renderProgress();
+  document.getElementById('shopOverlay').style.display='flex';
+}
+function drawCards(){
+  const pool = CARD_POOL.filter(c=>!run.cards.includes(c.id));
+  const p=[...pool]; const picks=[];
+  for(let i=0;i<3 && p.length;i++){ const idx=Math.floor(Math.random()*p.length); picks.push(p[idx]); p.splice(idx,1); }
+  return picks;
+}
+function buildLoadoutMarkupSellable(){
+  let html='';
+  for(let i=0;i<3;i++){
+    const cid = run.cards[i];
+    const pop = i===highlightSlot ? ' justAdded' : '';
+    if(cid){
+      const c = CARD_POOL.find(x=>x.id===cid);
+      const refund = Math.floor(c.price/2);
+      html += `<div class="loadSlot sellable${pop}" onclick="sellCard(${i})"><div class="ic">${c.icon}</div><div class="nm">${c.name}</div><div class="sellTag">売却 +${refund}</div></div>`;
+    } else {
+      html += `<div class="loadSlot empty${pop}"><div class="ic">+</div><div class="nm">空きスロット</div></div>`;
+    }
+  }
+  return html;
+}
+function sellCard(idx){
+  const cid = run.cards[idx];
+  if(!cid) return;
+  const card = CARD_POOL.find(c=>c.id===cid);
+  const refund = Math.floor(card.price/2);
+  if(!confirm(`${card.name}を売却しますか？（+${refund} DATA）`)) return;
+  run.cards.splice(idx,1);
+  run.coin += refund;
+  recomputeFromCards();
+  renderLoadout();
+  log(`売却：${card.icon} ${card.name}（+${refund}DATA）`);
+  document.getElementById('mathTotal').textContent = run.coin;
+  pendingCardIndex = null;
+  renderShop();
+}
+function renderShop(){
+  let html = `<div class="cardSub" style="color:var(--bg); opacity:.9;">現在の所持カード — タップで売却（半額）</div>`;
+  html += `<div class="loadout">${buildLoadoutMarkupSellable()}</div>`;
+
+  if(pendingCardIndex!==null){
+    const card = shopStock[pendingCardIndex];
+    html += `<div class="cardSub" style="color:var(--bg); margin-top:12px;">${card.icon} ${card.name}（${card.price} DATA）と交換するカードを選択</div>`;
+    html += '<div class="shopGrid">' + run.cards.map((cid,idx)=>{
+      const c = CARD_POOL.find(x=>x.id===cid);
+      return `<div class="shopBox" onclick="chooseReplace(${idx})"><div class="ic">${c.icon}</div><b>${c.name}</b><div class="d">${c.desc}</div></div>`;
+    }).join('') + '</div>';
+    html += `<button class="block" style="margin-top:10px;" onclick="cancelReplace()">キャンセル</button>`;
+  } else if(shopStock.length===0){
+    html += `<div class="cardSub" style="color:var(--bg); margin-top:12px;">オファーは全て取得済み</div>`;
+  } else {
+    html += `<div class="cardSub" style="color:var(--bg); margin-top:12px;">SECTOR ${run.stage} CARD OFFERS — 買えるだけタップで取得</div>`;
+    html += '<div class="shopGrid">' + shopStock.map((card,i)=>{
+      const afford = run.coin >= card.price;
+      return `
+      <div class="shopBox${afford?'':' unaffordable'}" onclick="selectOffer(${i})">
+        <div class="rarityTag">${card.rarity}</div>
+        <div class="ic">${card.icon}</div>
+        <b>${card.name}</b>
+        <div class="d">${card.desc}</div>
+        <div class="priceTag">${card.price} DATA</div>
+      </div>`;
+    }).join('') + '</div>';
+  }
+  document.getElementById('shopCards').innerHTML = html;
+
+  const rb = document.getElementById('rerollBtn');
+  rb.textContent = `RESHUFFLE (${run.rerollCost})`;
+  rb.disabled = run.coin < run.rerollCost || pendingCardIndex!==null;
+}
+function selectOffer(i){
+  const card = shopStock[i];
+  if(run.coin < card.price){ setMsg('データが足りない', true); return; }
+  if(run.cards.length < 3){
+    run.coin -= card.price;
+    const newIdx = run.cards.length;
+    run.cards.push(card.id);
+    shopStock.splice(i,1);
+    finalizePick(card, false, newIdx);
+  } else {
+    pendingCardIndex = i;
+    renderShop();
+  }
+}
+function chooseReplace(slotIdx){
+  const card = shopStock[pendingCardIndex];
+  if(run.coin < card.price){ pendingCardIndex=null; renderShop(); return; }
+  run.coin -= card.price;
+  const old = CARD_POOL.find(c=>c.id===run.cards[slotIdx]);
+  run.cards[slotIdx] = card.id;
+  log(`交換：${old?old.icon+' '+old.name:'（空）'} → ${card.icon} ${card.name}（コスト-${card.price}DATA）`);
+  shopStock.splice(pendingCardIndex,1);
+  pendingCardIndex = null;
+  finalizePick(card, true, slotIdx);
+}
+function cancelReplace(){ pendingCardIndex=null; renderShop(); }
+function finalizePick(card, alreadyLogged, idx){
+  recomputeFromCards();
+  highlightSlot = (idx!==undefined) ? idx : null;
+  renderLoadout();
+  AudioSys.sfxCardPick();
+  if(!alreadyLogged) log(`取得：${card.icon} ${card.name}（コスト-${card.price}DATA）`);
+  renderShop();
+  document.getElementById('mathTotal').textContent = run.coin;
+  highlightSlot = null;
+}
+function renderProgress(){
+  const t = Math.ceil(run.stage / STAGES_PER_TERM);
+  const startStage = (t-1)*STAGES_PER_TERM + 1;
+  const stagesInTerm = [startStage, startStage+1, startStage+2];
+  const pips = stagesInTerm.map((s,idx)=>{
+    const isBossPip = idx===2;
+    const isFilled = s < run.stage;
+    const isCurrent = s === run.stage;
+    return `<span class="pip${isBossPip?' boss':''}${isFilled?' filled':''}${isCurrent?' current':''}"></span>`;
+  }).join('');
+  document.getElementById('progressGraph').innerHTML = `
+    <div class="termNow">
+      <div class="termCircle">${t}<span class="termCircleSub">/${TOTAL_TERMS}</span></div>
+      <div class="termNowRight">
+        <div class="tnum">TERM ${t} — SECTOR ${run.stage}</div>
+        <div class="termPips">${pips}</div>
+      </div>
+    </div>
+    <div class="mapLegend">◆=ボス戦（縛り+白血球確定）</div>`;
+}
+function reroll(){
+  if(run.coin<run.rerollCost || pendingCardIndex!==null) return;
+  run.coin-=run.rerollCost; run.rerollCost+=1;
+  shopStock=drawCards(); renderShop();
+  document.getElementById('mathTotal').textContent = run.coin;
+}
+function closeShop(){ run.stage+=1; buildStage(); }
+
+// --- audio system: synthesized BGM (drone/ambient) + SFX, .co準拠・外部ファイルなし ---
+const AudioSys = (function(){
+  let ctx=null, masterGain=null, bgmGain=null, sfxGain=null;
+  let bgmNodes=[], bgmRunning=false, muted=true;
+
+  function ensureCtx(){
+    if(ctx) return ctx;
+    try{
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = ctx.createGain(); masterGain.gain.value = muted?0:1; masterGain.connect(ctx.destination);
+      bgmGain = ctx.createGain(); bgmGain.gain.value = 0.18; bgmGain.connect(masterGain);
+      sfxGain = ctx.createGain(); sfxGain.gain.value = 0.45; sfxGain.connect(masterGain);
+    }catch(e){ ctx=null; }
+    return ctx;
+  }
+  function unlock(){
+    const c = ensureCtx(); if(!c) return;
+    if(c.state==='suspended') c.resume().catch(()=>{});
+    if(!bgmRunning) startBgm();
+  }
+  function setMuted(v){
+    muted=v;
+    if(masterGain){
+      const c=ensureCtx(); const now=c.currentTime;
+      masterGain.gain.cancelScheduledValues(now);
+      masterGain.gain.setTargetAtTime(muted?0:1, now, 0.15);
+    }
+    try{ localStorage.setItem('inc_audio_muted', muted?'1':'0'); }catch(e){}
+  }
+  function isMuted(){ return muted; }
+  function loadMutedPref(){
+    try{ const s=localStorage.getItem('inc_audio_muted'); if(s!==null) muted = s==='1'; }catch(e){}
+  }
+
+  function startBgm(){
+    const c=ensureCtx(); if(!c||bgmRunning) return;
+    bgmRunning=true;
+    const baseFreqs=[73.4, 74.0, 110.0]; // 低いドローン、少しデチューンして揺らぎを作る
+    baseFreqs.forEach((f,i)=>{
+      const osc=c.createOscillator(); osc.type='sine'; osc.frequency.value=f;
+      const g=c.createGain(); g.gain.value = i===2?0.10:0.17;
+      osc.connect(g); g.connect(bgmGain); osc.start();
+      bgmNodes.push(osc,g);
+      const lfo=c.createOscillator(); lfo.frequency.value=0.04+i*0.02;
+      const lfoGain=c.createGain(); lfoGain.gain.value=g.gain.value*0.6;
+      lfo.connect(lfoGain); lfoGain.connect(g.gain); lfo.start();
+      bgmNodes.push(lfo,lfoGain);
+    });
+    const bufferSize=2*c.sampleRate;
+    const noiseBuffer=c.createBuffer(1,bufferSize,c.sampleRate);
+    const out=noiseBuffer.getChannelData(0);
+    for(let i=0;i<bufferSize;i++) out[i]=Math.random()*2-1;
+    const noise=c.createBufferSource(); noise.buffer=noiseBuffer; noise.loop=true;
+    const noiseFilter=c.createBiquadFilter(); noiseFilter.type='lowpass'; noiseFilter.frequency.value=350;
+    const noiseGain=c.createGain(); noiseGain.gain.value=0.025;
+    noise.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(bgmGain); noise.start();
+    bgmNodes.push(noise,noiseFilter,noiseGain);
+  }
+
+  function playTone(freq, duration, type, gainValue, delay){
+    const c=ensureCtx(); if(!c) return;
+    const t0=c.currentTime+(delay||0);
+    const osc=c.createOscillator(); osc.type=type||'sine'; osc.frequency.setValueAtTime(freq,t0);
+    const g=c.createGain(); g.gain.setValueAtTime(0,t0);
+    g.gain.linearRampToValueAtTime(gainValue||0.3, t0+0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+duration);
+    osc.connect(g); g.connect(sfxGain); osc.start(t0); osc.stop(t0+duration+0.05);
+  }
+  function sfxAbsorb(){ playTone(420,.12,'triangle',.28,0); playTone(660,.16,'triangle',.22,.06); }
+  function sfxTie(){ playTone(500,.1,'triangle',.28,0); playTone(750,.1,'triangle',.24,.05); playTone(1000,.16,'triangle',.22,.1); }
+  function sfxSwap(){ playTone(300,.08,'square',.18,0); playTone(480,.1,'square',.16,.05); }
+  function sfxBonus(){ playTone(600,.09,'sine',.26,0); playTone(900,.09,'sine',.24,.06); playTone(1200,.14,'sine',.2,.12); }
+  function sfxPoisonHurt(){ playTone(200,.18,'sawtooth',.22,0); playTone(150,.22,'sawtooth',.18,.05); }
+  function sfxPoisonHeal(){ playTone(500,.1,'sine',.24,0); playTone(700,.14,'sine',.22,.07); }
+  function sfxWarn(){ playTone(220,.1,'square',.2,0); playTone(220,.1,'square',.2,.16); }
+  function sfxEaten(){ playTone(300,.2,'sawtooth',.26,0); playTone(200,.22,'sawtooth',.24,.14); playTone(110,.35,'sawtooth',.22,.28); }
+  function sfxClear(){ playTone(523,.12,'triangle',.26,0); playTone(659,.12,'triangle',.24,.1); playTone(784,.2,'triangle',.24,.2); }
+  function sfxCardPick(){ playTone(440,.07,'square',.2,0); playTone(660,.09,'square',.18,.05); }
+  function sfxFail(){ playTone(180,.12,'square',.18,0); }
+
+  return { unlock, setMuted, isMuted, loadMutedPref, sfxAbsorb, sfxTie, sfxSwap, sfxBonus, sfxPoisonHurt, sfxPoisonHeal, sfxWarn, sfxEaten, sfxClear, sfxCardPick, sfxFail };
+})();
+AudioSys.loadMutedPref();
+function toggleMute(){
+  AudioSys.unlock();
+  AudioSys.setMuted(!AudioSys.isMuted());
+  document.getElementById('muteBtn').classList.toggle('muted', AudioSys.isMuted());
+}
+document.getElementById('muteBtn').classList.toggle('muted', AudioSys.isMuted());
+
+const loadingScreen = document.getElementById('loadingScreen');
+let loadingReady = false, loadingDismissed = false, gameStarted = false;
+
+function hideLoading(){
+  if(!loadingReady || loadingDismissed) return;
+  loadingDismissed = true;
+  loadingScreen.classList.add('hide');
+  setTimeout(()=>{ loadingScreen.classList.add('gone'); }, 500);
+  AudioSys.unlock();
+  if(!gameStarted){ gameStarted = true; initGame(); }
+}
+loadingScreen.addEventListener('click', hideLoading);
+loadingScreen.addEventListener('touchstart', hideLoading, {passive:true});
+
+setTimeout(()=>{
+  loadingReady = true;
+  loadingScreen.classList.add('ready');
+}, 900);
+</script>
+</body>
+</html>
