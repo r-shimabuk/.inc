@@ -388,6 +388,7 @@
 </style>
 </head>
 <body>
+<audio id="bgmPlayer" src="bgm.mp3" loop preload="auto"></audio>
 
 <div class="loading-screen" id="loadingScreen">
   <div class="virus-wrap">
@@ -1394,64 +1395,44 @@ function reroll(){
 }
 function closeShop(){ run.stage+=1; run.stageRerollCost=4; buildStage(); }
 
-// --- audio system: synthesized BGM (drone/ambient) + SFX, .co準拠・外部ファイルなし ---
+// --- audio system: BGMは用意された楽曲ファイル、SFXは.co準拠の合成音 ---
 const AudioSys = (function(){
-  let ctx=null, masterGain=null, bgmGain=null, sfxGain=null;
+  let ctx=null, masterGain=null, sfxGain=null;
   let counterSpinNodes=null, counterClickTimer=null;
-  let bgmNodes=[], bgmRunning=false, muted=false;
+  let muted=false;
+  const BGM_VOLUME = 0.4; // 以前の合成ドローン(0.18/1.0)と近い体感音量に調整
+  const bgmEl = document.getElementById('bgmPlayer');
 
   function ensureCtx(){
     if(ctx) return ctx;
     try{
       ctx = new (window.AudioContext || window.webkitAudioContext)();
-      masterGain = ctx.createGain(); masterGain.gain.value = muted?0:1; masterGain.connect(ctx.destination);
-      bgmGain = ctx.createGain(); bgmGain.gain.value = 0.18; bgmGain.connect(masterGain);
+      masterGain = ctx.createGain(); masterGain.gain.value = 1; masterGain.connect(ctx.destination);
       sfxGain = ctx.createGain(); sfxGain.gain.value = 0.45; sfxGain.connect(masterGain);
     }catch(e){ ctx=null; }
     return ctx;
   }
+  function applyBgmVolume(){
+    if(!bgmEl) return;
+    bgmEl.volume = muted ? 0 : BGM_VOLUME;
+  }
   function unlock(){
     const c = ensureCtx(); if(!c) return;
     if(c.state==='suspended') c.resume().catch(()=>{});
-    if(!bgmRunning) startBgm();
+    if(bgmEl){
+      applyBgmVolume();
+      if(bgmEl.paused) bgmEl.play().catch(()=>{});
+    }
   }
   function setMuted(v){
     muted=v;
-    if(masterGain){
-      const c=ensureCtx(); const now=c.currentTime;
-      masterGain.gain.cancelScheduledValues(now);
-      masterGain.gain.setTargetAtTime(muted?0:1, now, 0.15);
-    }
+    applyBgmVolume();
     try{ localStorage.setItem('inc_audio_muted', muted?'1':'0'); }catch(e){}
   }
   function isMuted(){ return muted; }
   function loadMutedPref(){
     try{ const s=localStorage.getItem('inc_audio_muted'); if(s!==null) muted = s==='1'; }catch(e){}
-  }
-
-  function startBgm(){
-    const c=ensureCtx(); if(!c||bgmRunning) return;
-    bgmRunning=true;
-    const baseFreqs=[73.4, 74.0, 110.0]; // 低いドローン、少しデチューンして揺らぎを作る
-    baseFreqs.forEach((f,i)=>{
-      const osc=c.createOscillator(); osc.type='sine'; osc.frequency.value=f;
-      const g=c.createGain(); g.gain.value = i===2?0.10:0.17;
-      osc.connect(g); g.connect(bgmGain); osc.start();
-      bgmNodes.push(osc,g);
-      const lfo=c.createOscillator(); lfo.frequency.value=0.04+i*0.02;
-      const lfoGain=c.createGain(); lfoGain.gain.value=g.gain.value*0.6;
-      lfo.connect(lfoGain); lfoGain.connect(g.gain); lfo.start();
-      bgmNodes.push(lfo,lfoGain);
-    });
-    const bufferSize=2*c.sampleRate;
-    const noiseBuffer=c.createBuffer(1,bufferSize,c.sampleRate);
-    const out=noiseBuffer.getChannelData(0);
-    for(let i=0;i<bufferSize;i++) out[i]=Math.random()*2-1;
-    const noise=c.createBufferSource(); noise.buffer=noiseBuffer; noise.loop=true;
-    const noiseFilter=c.createBiquadFilter(); noiseFilter.type='lowpass'; noiseFilter.frequency.value=350;
-    const noiseGain=c.createGain(); noiseGain.gain.value=0.025;
-    noise.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(bgmGain); noise.start();
-    bgmNodes.push(noise,noiseFilter,noiseGain);
+    applyBgmVolume();
   }
 
   function playTone(freq, duration, type, gainValue, delay){
