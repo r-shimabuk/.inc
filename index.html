@@ -620,7 +620,7 @@ function initGame(){
   recomputeFromCards();
   renderLoadout();
   updateExportCount();
-  log('凡例：■抗体（免疫の基本単位。勝てば連結して吸収、負けそうなら位置交換⇄で切り抜けられる）／➤徘徊する抗体（時々動く）／✚白血球（強い時だけ倒せる、弱いと危険なので近づくな）／✦お得マス・×柄危険マスはどちらも俯瞰では見えない。下のSIDE VIEWで確認を／緑地=CORE（目的地）');
+  log('凡例：■抗体（免疫の基本単位。勝てば連結して吸収、負けそうなら位置交換⇄で切り抜けられる）／➤徘徊する抗体（こちらに近づいてくる）／✚白血球（強い時だけ倒せる、弱いと危険なので近づくな）／✦お得マス・×柄危険マスはどちらも俯瞰では見えない。下のSIDE VIEWで確認を／緑地=CORE（目的地）');
   showIntro();
 }
 
@@ -978,9 +978,14 @@ function tickWorld(){
     if(cell.type==='enemy' && cell.mover && Math.random()<0.4){
       const dirs=[[r2-1,c2],[r2+1,c2],[r2,c2-1],[r2,c2+1]].filter(([nr,nc])=>nr>=0&&nr<SIZE&&nc>=0&&nc<SIZE&&state.grid[nr][nc].type==='empty');
       if(dirs.length){
-        const [nr,nc]=dirs[Math.floor(Math.random()*dirs.length)];
+        dirs.sort((a,b)=>{
+          const da=Math.abs(a[0]-state.pos.r)+Math.abs(a[1]-state.pos.c);
+          const db=Math.abs(b[0]-state.pos.r)+Math.abs(b[1]-state.pos.c);
+          return da-db;
+        });
+        const [nr,nc]=dirs[0];
         state.grid[nr][nc]=cell; state.grid[r2][c2]={type:'empty'};
-        log(`${ICONS.mover} 徘徊個体(${cell.value})が移動した`);
+        log(`${ICONS.mover} 徘徊個体(${cell.value})がこちらに近づいてきた`);
       }
     }
   }
