@@ -1400,7 +1400,7 @@ const AudioSys = (function(){
   let ctx=null, masterGain=null, sfxGain=null;
   let counterSpinNodes=null, counterClickTimer=null;
   let muted=false;
-  const BGM_VOLUME = 0.1; // 前回の0.4から約1/4に下げた
+  const BGM_VOLUME = 0.03; // 音量は対数的に感じるため、線形の0.1では体感差が小さかった。大きく下げる
   const bgmEl = document.getElementById('bgmPlayer');
 
   function ensureCtx(){
