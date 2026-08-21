@@ -1400,7 +1400,7 @@ const AudioSys = (function(){
   let ctx=null, masterGain=null, sfxGain=null;
   let counterSpinNodes=null, counterClickTimer=null;
   let muted=false;
-  const BGM_VOLUME = 0.4; // 以前の合成ドローン(0.18/1.0)と近い体感音量に調整
+  const BGM_VOLUME = 0.1; // 前回の0.4から約1/4に下げた
   const bgmEl = document.getElementById('bgmPlayer');
 
   function ensureCtx(){
