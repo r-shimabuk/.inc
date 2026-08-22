@@ -19,7 +19,7 @@
     --pink-dim:rgba(255,46,196,.55);
     --bg-deep:#ded18f;
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none;}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; touch-action:manipulation;}
   html,body{height:100%; margin:0; overflow:hidden; background:var(--bg);}
   body{
     font-family:"Space Grotesk", sans-serif;
@@ -89,7 +89,7 @@
   .pointsBadge .v{ font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:12px; font-variant-numeric:tabular-nums; }
   .pointsBadge .lbl{ font-family:"Courier New",monospace; font-size:7px; color:var(--ink-dim); letter-spacing:.05em; }
   .muteBtn{
-    width:22px; height:22px; border:1.5px solid var(--green); border-radius:50%; background:transparent;
+    width:22px; height:22px; min-height:0; border:1.5px solid var(--green); border-radius:50%; background:transparent;
     display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; margin-top:2px; padding:0;
   }
   .muteBtn svg{ width:11px; height:11px; }
@@ -276,7 +276,7 @@
 
   .row{display:flex; gap:6px;}
   button{
-    font-family:"Space Grotesk", sans-serif; font-size:11px; font-weight:700; padding:11px 12px;
+    font-family:"Space Grotesk", sans-serif; font-size:12px; font-weight:700; padding:15px 12px; min-height:48px;
     border:1.5px solid var(--green); border-radius:2px; background:var(--bg); color:var(--green); cursor:pointer;
     letter-spacing:.03em; text-transform:uppercase;
   }
@@ -388,7 +388,7 @@
   .bubbleBody b{ color:var(--green); }
   .bubbleFooter{ display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:14px; border-top:1px dashed var(--green); }
   .bubblePageNum{ font-family:"Courier New",monospace; font-size:9px; color:var(--green-dim); letter-spacing:.05em; }
-  #introNextBtn{ padding:8px 16px; }
+  #introNextBtn{ padding:15px 22px; }
   .termNow{ display:flex; align-items:center; gap:14px; }
   .termCircle{
     width:52px; height:52px; border-radius:50%; border:2px solid var(--pink); flex-shrink:0;
