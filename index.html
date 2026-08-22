@@ -296,6 +296,12 @@
   .cardSub{font-family:"Courier New",monospace; font-size:9px; color:var(--ink-dim); letter-spacing:.06em; margin-bottom:10px;}
 
   .volRow{ margin-bottom:16px; }
+  .sellConfirmRow{ display:flex; gap:10px; align-items:center; margin-bottom:10px; }
+  .sellConfirmRow b{ font-size:13px; }
+  .sellConfirmRefund{
+    font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:20px; color:var(--green);
+    text-align:center; border:1.5px solid var(--green); padding:8px; margin-bottom:14px;
+  }
   .volLabel{ font-family:"Courier New",monospace; font-size:11px; color:var(--ink); margin-bottom:6px; }
   input[type="range"]{
     -webkit-appearance:none; appearance:none; width:100%; height:1.5px; background:var(--green); outline:none; margin:0;
@@ -522,6 +528,24 @@
     <div class="co-divider"></div>
     <button class="block filled" onclick="location.reload()">再侵入する（NEW GAME+）</button>
     <button class="block" style="margin-top:8px; border-color:var(--bg); color:var(--bg);" onclick="copyPlaytestData()">▤ プレイ記録をコピー（テスト協力用）</button>
+  </div>
+</div>
+
+<div class="overlay" id="sellConfirmOverlay" style="display:none;">
+  <div class="card">
+    <div class="cardTitle">売却の確認</div>
+    <div class="sellConfirmRow">
+      <span class="ic" id="sellConfirmIcon" style="font-size:20px;"></span>
+      <div>
+        <b id="sellConfirmName"></b>
+        <div class="cardSub" style="margin:2px 0 0;">を売却しますか？</div>
+      </div>
+    </div>
+    <div class="sellConfirmRefund" id="sellConfirmRefund"></div>
+    <div class="row">
+      <button class="block" onclick="cancelSell()">キャンセル</button>
+      <button class="block filled" onclick="confirmSell()">売却する</button>
+    </div>
   </div>
 </div>
 
@@ -1361,12 +1385,28 @@ function buildLoadoutMarkupSellable(){
   }
   return html;
 }
+let pendingSellIndex = null;
 function sellCard(idx){
   const cid = run.cards[idx];
   if(!cid) return;
   const card = CARD_POOL.find(c=>c.id===cid);
   const refund = Math.floor(card.price/2);
-  if(!confirm(`${card.name}を売却しますか？（+${refund} DATA）`)) return;
+  pendingSellIndex = idx;
+  document.getElementById('sellConfirmIcon').textContent = card.icon;
+  document.getElementById('sellConfirmName').textContent = card.name;
+  document.getElementById('sellConfirmRefund').textContent = `+${refund} DATA`;
+  document.getElementById('sellConfirmOverlay').style.display='flex';
+}
+function cancelSell(){
+  pendingSellIndex = null;
+  document.getElementById('sellConfirmOverlay').style.display='none';
+}
+function confirmSell(){
+  const idx = pendingSellIndex;
+  if(idx===null) return;
+  const cid = run.cards[idx];
+  const card = CARD_POOL.find(c=>c.id===cid);
+  const refund = Math.floor(card.price/2);
   run.cards.splice(idx,1);
   run.coin += refund;
   recomputeFromCards();
@@ -1374,6 +1414,8 @@ function sellCard(idx){
   log(`売却：${card.icon} ${card.name}（+${refund}DATA）`);
   document.getElementById('mathTotal').textContent = run.coin;
   pendingCardIndex = null;
+  pendingSellIndex = null;
+  document.getElementById('sellConfirmOverlay').style.display='none';
   renderShop();
 }
 function renderShop(){
