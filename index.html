@@ -880,12 +880,30 @@ function buildStage(){
 function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } }
 
 function triggerChaosShuffle(){
-  const isBoss = run.stage % STAGES_PER_TERM === 0;
-  const { grid } = generateStageGrid(isBoss, state.pos.r, state.pos.c);
-  state.grid = grid;
-  log('✳ 隠しマスを踏んだ：ステージがリロールされた！');
+  state.busy = true;
   AudioSys.sfxCounterSpinStart();
-  setTimeout(()=>{ AudioSys.sfxCounterSpinStop(); }, 550);
+  const board = document.getElementById('board');
+  const cells = Array.from(board.children);
+  let ticks = 0;
+  const maxTicks = 9;
+  const spin = setInterval(()=>{
+    ticks++;
+    cells.forEach(div=>{
+      div.textContent = 1 + Math.floor(Math.random()*30);
+      div.style.opacity = '.6';
+    });
+    if(ticks>=maxTicks){
+      clearInterval(spin);
+      AudioSys.sfxCounterSpinStop();
+      const isBoss = run.stage % STAGES_PER_TERM === 0;
+      const { grid } = generateStageGrid(isBoss, state.pos.r, state.pos.c);
+      state.grid = grid;
+      state.busy = false;
+      log('✳ 隠しマスを踏んだ：ステージがリロールされた！');
+      setMsg('✳ ステージがリロールされた！', true);
+      afterAction();
+    }
+  }, 65);
 }
 
 function revealStage(){
@@ -1147,8 +1165,7 @@ function tryMove(r,c){
     state.ap-=1; state.pos={r,c};
     state.grid[r][c]={type:'empty'};
     triggerChaosShuffle();
-    setMsg('✳ ステージがリロールされた！', true);
-    afterAction(); return;
+    return;
   }
   if(target.type==='predator'){
     if(!tryBreak(r,c,target)) { /* 弱い場合はそもそもタップできない仕様 */ }
