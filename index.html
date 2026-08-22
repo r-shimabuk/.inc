@@ -93,6 +93,7 @@
     display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; margin-top:2px; padding:0;
   }
   .muteBtn svg{ width:11px; height:11px; }
+  #settingsBtn{ font-size:11px; color:var(--green); line-height:1; }
   .muteBtn .ion{ stroke:var(--green); fill:none; }
   .muteBtn .ioff{ stroke:var(--ink-dim); fill:none; display:none; }
   .muteBtn.muted .ion{ display:none; }
@@ -294,6 +295,19 @@
   .cardTitle{font-size:16px; margin-bottom:2px; font-weight:700;}
   .cardSub{font-family:"Courier New",monospace; font-size:9px; color:var(--ink-dim); letter-spacing:.06em; margin-bottom:10px;}
 
+  .volRow{ margin-bottom:16px; }
+  .volLabel{ font-family:"Courier New",monospace; font-size:11px; color:var(--ink); margin-bottom:6px; }
+  input[type="range"]{
+    -webkit-appearance:none; appearance:none; width:100%; height:1.5px; background:var(--green); outline:none; margin:0;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+    background:var(--green); border:1.5px solid var(--bg); cursor:pointer;
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:16px; height:16px; border-radius:50%; background:var(--green); border:1.5px solid var(--bg); cursor:pointer;
+  }
+
   .receiptCard{ background:var(--green); color:var(--bg); border:none; padding:20px 18px; position:relative; z-index:0; }
   .receiptHead{text-align:center; margin-bottom:8px;}
   .receiptHead .biz{font-size:16px; font-weight:700; letter-spacing:.06em;}
@@ -423,6 +437,7 @@
       <button class="muteBtn" id="muteBtn" onclick="toggleMute()">
         <svg viewBox="0 0 24 24"><path class="ion" d="M4 9v6h4l5 5V4L8 9H4z"/><path class="ion" d="M16 8a5 5 0 010 8"/><path class="ioff" d="M4 9v6h4l5 5V4L8 9H4z"/><path class="ioff" d="M15 9l6 6M21 9l-6 6"/></svg>
       </button>
+      <button class="muteBtn" id="settingsBtn" onclick="openSettings()">⚙&#xFE0E;</button>
     </div>
   </div>
   <div class="hr"></div>
@@ -507,6 +522,24 @@
     <div class="co-divider"></div>
     <button class="block filled" onclick="location.reload()">再侵入する（NEW GAME+）</button>
     <button class="block" style="margin-top:8px; border-color:var(--bg); color:var(--bg);" onclick="copyPlaytestData()">▤ プレイ記録をコピー（テスト協力用）</button>
+  </div>
+</div>
+
+<div class="overlay" id="settingsOverlay" style="display:none;">
+  <div class="card">
+    <div class="cardTitle">SETTINGS</div>
+    <div class="cardSub">音量調整</div>
+
+    <div class="volRow">
+      <div class="volLabel">BGM <span id="bgmVolLabel">9</span>%</div>
+      <input type="range" id="bgmVolSlider" min="0" max="100" value="9" oninput="onBgmVolInput(this.value)">
+    </div>
+    <div class="volRow">
+      <div class="volLabel">効果音 <span id="sfxVolLabel">45</span>%</div>
+      <input type="range" id="sfxVolSlider" min="0" max="100" value="45" oninput="onSfxVolInput(this.value)">
+    </div>
+
+    <button class="block filled" style="margin-top:14px;" onclick="closeSettings()">閉じる</button>
   </div>
 </div>
 
@@ -1401,7 +1434,7 @@ const AudioSys = (function(){
   let bgmSource=null, bgmGainNode=null;
   let counterSpinNodes=null, counterClickTimer=null;
   let muted=false;
-  const BGM_VOLUME = 0.09; // GainNode経由で確実に効くようになったので、0.03から少し上げる
+  let bgmVolume=0.09, sfxVolume=0.45; // 0〜1、設定画面のスライダーで個別に変更できる
   const bgmEl = document.getElementById('bgmPlayer');
 
   function ensureCtx(){
@@ -1409,8 +1442,8 @@ const AudioSys = (function(){
     try{
       ctx = new (window.AudioContext || window.webkitAudioContext)();
       masterGain = ctx.createGain(); masterGain.gain.value = 1; masterGain.connect(ctx.destination);
-      sfxGain = ctx.createGain(); sfxGain.gain.value = 0.45; sfxGain.connect(masterGain);
-      bgmGainNode = ctx.createGain(); bgmGainNode.gain.value = muted?0:BGM_VOLUME; bgmGainNode.connect(masterGain);
+      sfxGain = ctx.createGain(); sfxGain.gain.value = muted?0:sfxVolume; sfxGain.connect(masterGain);
+      bgmGainNode = ctx.createGain(); bgmGainNode.gain.value = muted?0:bgmVolume; bgmGainNode.connect(masterGain);
       if(bgmEl && !bgmSource){
         try{
           bgmSource = ctx.createMediaElementSource(bgmEl);
@@ -1423,10 +1456,13 @@ const AudioSys = (function(){
   function applyBgmVolume(){
     // iOS Safariは<audio>のvolumeプロパティを無視するため、GainNode側で音量を制御する
     if(bgmGainNode){
-      bgmGainNode.gain.value = muted ? 0 : BGM_VOLUME;
+      bgmGainNode.gain.value = muted ? 0 : bgmVolume;
     } else if(bgmEl){
-      bgmEl.volume = muted ? 0 : BGM_VOLUME; // Web Audio未対応環境向けのフォールバック
+      bgmEl.volume = muted ? 0 : bgmVolume; // Web Audio未対応環境向けのフォールバック
     }
+  }
+  function applySfxVolume(){
+    if(sfxGain) sfxGain.gain.value = muted ? 0 : sfxVolume;
   }
   function unlock(){
     const c = ensureCtx(); if(!c) return;
@@ -1439,12 +1475,28 @@ const AudioSys = (function(){
   function setMuted(v){
     muted=v;
     applyBgmVolume();
+    applySfxVolume();
     try{ localStorage.setItem('inc_audio_muted', muted?'1':'0'); }catch(e){}
   }
   function isMuted(){ return muted; }
+  function setBgmVolume(v){
+    bgmVolume = Math.max(0, Math.min(1, v));
+    applyBgmVolume();
+    try{ localStorage.setItem('inc_bgm_volume', String(bgmVolume)); }catch(e){}
+  }
+  function setSfxVolume(v){
+    sfxVolume = Math.max(0, Math.min(1, v));
+    applySfxVolume();
+    try{ localStorage.setItem('inc_sfx_volume', String(sfxVolume)); }catch(e){}
+  }
+  function getBgmVolume(){ return bgmVolume; }
+  function getSfxVolume(){ return sfxVolume; }
   function loadMutedPref(){
     try{ const s=localStorage.getItem('inc_audio_muted'); if(s!==null) muted = s==='1'; }catch(e){}
+    try{ const b=localStorage.getItem('inc_bgm_volume'); if(b!==null) bgmVolume = parseFloat(b); }catch(e){}
+    try{ const s2=localStorage.getItem('inc_sfx_volume'); if(s2!==null) sfxVolume = parseFloat(s2); }catch(e){}
     applyBgmVolume();
+    applySfxVolume();
   }
 
   function playTone(freq, duration, type, gainValue, delay){
@@ -1525,7 +1577,7 @@ const AudioSys = (function(){
     osc.stop(t0+0.4); grainLfo.stop(t0+0.4); noise.stop(t0+0.4);
   }
 
-  return { unlock, setMuted, isMuted, loadMutedPref, sfxAbsorb, sfxTie, sfxSwap, sfxBonus, sfxPoisonHurt, sfxPoisonHeal, sfxWarn, sfxEaten, sfxClear, sfxCardPick, sfxFail, sfxCounterSpinStart, sfxCounterSpinStop };
+  return { unlock, setMuted, isMuted, loadMutedPref, setBgmVolume, setSfxVolume, getBgmVolume, getSfxVolume, sfxAbsorb, sfxTie, sfxSwap, sfxBonus, sfxPoisonHurt, sfxPoisonHeal, sfxWarn, sfxEaten, sfxClear, sfxCardPick, sfxFail, sfxCounterSpinStart, sfxCounterSpinStop };
 })();
 AudioSys.loadMutedPref();
 function toggleMute(){
@@ -1534,6 +1586,29 @@ function toggleMute(){
   document.getElementById('muteBtn').classList.toggle('muted', AudioSys.isMuted());
 }
 document.getElementById('muteBtn').classList.toggle('muted', AudioSys.isMuted());
+
+function openSettings(){
+  AudioSys.unlock();
+  const bgmPct = Math.round(AudioSys.getBgmVolume()*100);
+  const sfxPct = Math.round(AudioSys.getSfxVolume()*100);
+  document.getElementById('bgmVolSlider').value = bgmPct;
+  document.getElementById('bgmVolLabel').textContent = bgmPct;
+  document.getElementById('sfxVolSlider').value = sfxPct;
+  document.getElementById('sfxVolLabel').textContent = sfxPct;
+  document.getElementById('settingsOverlay').style.display='flex';
+}
+function closeSettings(){
+  document.getElementById('settingsOverlay').style.display='none';
+}
+function onBgmVolInput(v){
+  document.getElementById('bgmVolLabel').textContent = v;
+  AudioSys.setBgmVolume(v/100);
+}
+function onSfxVolInput(v){
+  document.getElementById('sfxVolLabel').textContent = v;
+  AudioSys.setSfxVolume(v/100);
+  AudioSys.sfxCardPick(); // 現在の効果音音量をその場で確認できるように試し鳴らし
+}
 
 const loadingScreen = document.getElementById('loadingScreen');
 let loadingReady = false, loadingDismissed = false, gameStarted = false;
