@@ -143,29 +143,29 @@
   .boardWrap{display:flex; justify-content:center; padding:4px 0; position:relative; z-index:0;}
 
   .sideViewWrap{ margin:2px 0 0; }
-  .sideViewLabel{ font-family:"Courier New",monospace; font-size:7px; color:var(--green-dim); letter-spacing:.05em; text-align:center; margin-bottom:2px; }
+  .sideViewLabel{ font-family:"Courier New",monospace; font-size:7px; color:var(--green-dim); letter-spacing:.05em; text-align:center; margin-bottom:3px; }
   .sideView{
-    width:286px; margin:0 auto; height:38px; position:relative;
+    width:286px; margin:0 auto; height:70px; position:relative;
     display:flex; align-items:flex-end; justify-content:space-between; padding:0 4px; overflow:hidden;
   }
-  .sideView::after{ content:''; position:absolute; left:0; right:0; bottom:7px; height:1.5px; background:var(--green); opacity:.4; }
+  .sideView::after{ content:''; position:absolute; left:0; right:0; bottom:14px; height:1.5px; background:var(--green); opacity:.4; }
   .sideSlot{ width:52px; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; position:relative; }
   .sideVal{ font-family:"Courier New",monospace; font-size:8px; color:var(--green); margin-bottom:2px; }
 
   /* 駒シルエットの代わりに、数字そのものの大きさで格を表現する */
   .sideBigNum{
     font-family:"Space Grotesk",sans-serif; font-weight:700; color:var(--green); font-size:22px;
-    line-height:1; margin-bottom:6px; font-variant-numeric:tabular-nums;
+    line-height:1; margin-bottom:12px; font-variant-numeric:tabular-nums;
   }
   .sideBigNum.player{ color:var(--green); }
   .sideBigNum.predatorNum{ color:var(--pink); }
-  .sideEmpty{ width:18px; height:2px; background:var(--green-dim); margin-bottom:7px; opacity:.5; }
-  .sideGoal{ width:22px; height:20px; background:var(--green); border-radius:11px 11px 0 0; margin-bottom:7px; }
+  .sideEmpty{ width:18px; height:2px; background:var(--green-dim); margin-bottom:14px; opacity:.5; }
+  .sideGoal{ width:26px; height:30px; background:var(--green); border-radius:13px 13px 0 0; margin-bottom:14px; }
 
   /* 横から見た時だけ分かる「お宝」マーカー（俯瞰では見えない） */
-  .sideTreasure{ position:absolute; bottom:8px; font-size:11px; color:var(--pink); }
-  .sideDanger{ position:absolute; bottom:8px; font-size:11px; color:var(--ink); opacity:.6; }
-  .sideChaos{ position:absolute; bottom:8px; font-size:11px; color:var(--pink); }
+  .sideTreasure{ position:absolute; bottom:16px; font-size:11px; color:var(--pink); }
+  .sideDanger{ position:absolute; bottom:16px; font-size:11px; color:var(--ink); opacity:.6; }
+  .sideChaos{ position:absolute; bottom:16px; font-size:11px; color:var(--pink); }
   .board{
     position:relative; z-index:0;
     display:grid; grid-template-columns:repeat(5,54px); grid-template-rows:repeat(5,54px);
@@ -590,10 +590,21 @@ const CARD_POOL = [
   {id:'swapcost', name:'交渉術', icon:ICONS.swap, desc:'位置交換のコストが-3から-2になる', rarity:'UNCOMMON', price:6},
   {id:'grace', name:'擬態強化', icon:ICONS.grace, desc:'白血球に見つかっても、逃げる猶予がもう1ターン増える', rarity:'UNCOMMON', price:7},
   {id:'dormant', name:'潜伏戦略', icon:'≋\uFE0E', desc:'最初の3手はドレインが発動しないが、4手目以降はドレイン量が+3される', rarity:'UNCOMMON', price:7},
+  {id:'goalBonus', name:'制圧ボーナス', icon:'$', desc:'CORE到達時、感染力に応じてDATAを追加でもらえる（最大+5）', rarity:'UNCOMMON', price:7},
   {id:'mult', name:'自己複製', icon:ICONS.mult, desc:'敵を倒すと足し算ではなく掛け算で増えるようになる（最大×4）', rarity:'RARE', price:9},
   {id:'voracious', name:'大食い', icon:'+', desc:'敵を倒した時の増加量が2倍になるが、突破のたびにコストをさらに-1多く消費する', rarity:'RARE', price:9},
   {id:'burst', name:'初期特攻', icon:'✳\uFE0E', desc:'初期感染力が+15される。ただし1手動くたびに-1ずつ減っていく（1未満にはならない）', rarity:'RARE', price:10},
   {id:'heavymult', name:'重量掛け算', icon:'✳\uFE0E', desc:'敵を倒すと掛け算で増えるが、処理コスト上限が-6される（最大×6）', rarity:'RARE', price:11},
+
+  // --- 上位互換版：タームの後半（TERM4〜）にならないと出現しない ---
+  {id:'power2', name:'初期コード強化・改', icon:ICONS.perm_power, desc:'毎セクタの初期感染力が+6される（通常版の上位互換）', rarity:'RARE', price:9, minTerm:4},
+  {id:'ap2', name:'処理能力強化・改', icon:ICONS.perm_ap, desc:'毎セクタの処理コスト上限が+6される（通常版の上位互換）', rarity:'RARE', price:9, minTerm:4},
+  {id:'drain2', name:'侵食力強化・改', icon:ICONS.perm_drain, desc:'隣接する敵への毎ターンダメージが+2される（通常版の上位互換）', rarity:'RARE', price:9, minTerm:4},
+  {id:'chain2', name:'感染連鎖強化・改', icon:'+', desc:'敵を倒した時に増える量が+1から+8になる（通常版の上位互換）', rarity:'RARE', price:10, minTerm:4},
+  {id:'bonus2', name:'貪欲な複製・改', icon:ICONS.bonus, desc:'お得マス（✦）の効果が×2から×4になる（通常版の上位互換）', rarity:'RARE', price:11, minTerm:4},
+  {id:'poison2', name:'毒耐性・改', icon:ICONS.poison_immune, desc:'毒マス（×柄）を踏むと、逆に感染力+4になる（通常版の上位互換）', rarity:'RARE', price:11, minTerm:4},
+  {id:'swapcost2', name:'交渉術・改', icon:ICONS.swap, desc:'位置交換のコストが-3から-1になる（通常版の上位互換）', rarity:'RARE', price:10, minTerm:4},
+  {id:'grace2', name:'擬態強化・改', icon:ICONS.grace, desc:'白血球に見つかっても、逃げる猶予が3ターンに延長される（通常版よりさらに強力）', rarity:'RARE', price:10, minTerm:4},
 ];
 
 let run=null, state=null, shopStock=[], pendingCardIndex=null;
@@ -694,15 +705,15 @@ function introNext(){
 
 function recomputeFromCards(){
   run.permPower=0; run.permAP=0; run.permDrain=0;
-  run.bonusMult=2; run.poisonImmune=false; run.swapCost=3; run.graceTurns=1;
+  run.bonusMult=2; run.poisonImmune=false; run.poisonHeal=2; run.swapCost=3; run.graceTurns=1;
   run.chainBonus=1; run.multActive=false; run.multCap=4;
-  run.burstActive=false; run.voraciousActive=false; run.dormantActive=false;
+  run.burstActive=false; run.voraciousActive=false; run.dormantActive=false; run.goalBonusActive=false;
   run.cards.forEach(id=>{
     if(id==='power') run.permPower+=3;
     if(id==='ap') run.permAP+=3;
     if(id==='drain') run.permDrain+=1;
     if(id==='bonus') run.bonusMult=3;
-    if(id==='poison') run.poisonImmune=true;
+    if(id==='poison'){ run.poisonImmune=true; run.poisonHeal=Math.max(run.poisonHeal,2); }
     if(id==='swapcost') run.swapCost=2;
     if(id==='grace') run.graceTurns=2;
     if(id==='chain') run.chainBonus=4;
@@ -711,6 +722,16 @@ function recomputeFromCards(){
     if(id==='heavymult'){ run.multActive=true; run.permAP-=6; run.multCap=Math.max(run.multCap||0,6); }
     if(id==='voracious') run.voraciousActive=true;
     if(id==='dormant') run.dormantActive=true;
+    if(id==='goalBonus') run.goalBonusActive=true;
+    // --- 上位互換版 ---
+    if(id==='power2') run.permPower+=6;
+    if(id==='ap2') run.permAP+=6;
+    if(id==='drain2') run.permDrain+=2;
+    if(id==='chain2') run.chainBonus=8;
+    if(id==='bonus2') run.bonusMult=4;
+    if(id==='poison2'){ run.poisonImmune=true; run.poisonHeal=4; }
+    if(id==='swapcost2') run.swapCost=1;
+    if(id==='grace2') run.graceTurns=3;
   });
 }
 
@@ -1107,9 +1128,9 @@ function tryMove(r,c){
   if(target.type==='poison'){
     state.ap-=1; state.pos={r,c};
     if(run.poisonImmune){
-      state.power += 2;
+      state.power += run.poisonHeal;
       state.burstFx='poisonHeal';
-      log(`毒耐性プロトコル発動：毒マスを逆手に取り感染力+2の${state.power}に`);
+      log(`毒耐性プロトコル発動：毒マスを逆手に取り感染力+${run.poisonHeal}の${state.power}に`);
       AudioSys.sfxPoisonHeal();
       setMsg('毒耐性：むしろ感染力が上昇');
     } else {
@@ -1269,11 +1290,18 @@ function stepManual(){ if(!state||state.busy||state.ap<=0) return; state.ap-=1; 
 
 function onGoal(){
   const before = run.coin;
-  const earned = state.ap;
+  let earned = state.ap;
+  let goalBonus = 0;
+  if(run.goalBonusActive){
+    goalBonus = Math.min(5, Math.floor(state.power/20));
+    earned += goalBonus;
+  }
   run.coin += earned;
   AudioSys.sfxClear();
   setMsg(`CORE到達！ 残コストをデータ+${earned}に変換`);
-  log(`SECTOR ${run.stage} 突破：データ+${earned}（合計${run.coin}）`);
+  log(goalBonus>0
+    ? `SECTOR ${run.stage} 突破：データ+${earned}（内、制圧ボーナス+${goalBonus}／合計${run.coin}）`
+    : `SECTOR ${run.stage} 突破：データ+${earned}（合計${run.coin}）`);
   if(run.stage >= TOTAL_STAGES){
     document.getElementById('clearPower').innerHTML = `${state.power}<span class="unit">感染力</span>`;
     document.getElementById('clearOverlay').style.display='flex';
@@ -1295,7 +1323,8 @@ function openShop(before, earned){
   document.getElementById('shopOverlay').style.display='flex';
 }
 function drawCards(){
-  const pool = CARD_POOL.filter(c=>!run.cards.includes(c.id));
+  const currentTerm = Math.ceil(run.stage / STAGES_PER_TERM);
+  const pool = CARD_POOL.filter(c=>!run.cards.includes(c.id) && (!c.minTerm || currentTerm >= c.minTerm));
   const p=[...pool]; const picks=[];
   for(let i=0;i<3 && p.length;i++){ const idx=Math.floor(Math.random()*p.length); picks.push(p[idx]); p.splice(idx,1); }
   return picks;
